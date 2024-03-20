@@ -135,7 +135,7 @@ typedef struct dd_task_list
 void dd_scheduler(void *pvParameters);
 void dd_task_generator(void *pvParameters);
 void user_defined(void *pvParameters);
-void monitor_task(void *pvParameters);
+void monitor(void *pvParameters);
 void release_dd_task(TaskHandle_t t_handle,
 					 task_type type,
 					 uint32_t task_id,
