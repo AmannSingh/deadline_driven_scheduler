@@ -135,7 +135,7 @@ typedef struct dd_task_list
 void dd_scheduler(void *pvParameters);
 void dd_task_generator(void *pvParameters);
 void user_defined(void *pvParameters);
-void monitor_tasks(void *pvParameters);
+void monitor_task(void *pvParameters);
 void release_dd_task(TaskHandle_t t_handle,
 					 task_type type,
 					 uint32_t task_id,
@@ -167,8 +167,8 @@ int main(void)
 	// TODO: Check if stack size is correct
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 	dd_task_generator_task = xTaskCreate(dd_task_generator, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
-	user_defined_task = xTaskCreate(user_defined "user_defined", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
-	monitortask = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	user_defined_task = xTaskCreate(user_defined, "user_defined", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
+	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
 	if ((dd_scheduler_task == NULL) | (dd_task_generator_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
 	{
@@ -185,7 +185,7 @@ int main(void)
 void dd_scheduler(void *pvParameters){};
 void dd_task_generator(void *pvParameters){};
 void user_defined(void *pvParameters){};
-void monitor_tasks(void *pvParameters){};
+void monitor(void *pvParameters){};
 
 /* Core Functionality */
 
