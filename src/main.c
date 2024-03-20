@@ -1,3 +1,100 @@
+/*
+
+Deadline-Driven Scheduler (EDF)
+
+DD-Task:
+	- Task managed by DDS
+	- Data structure that holds hanlde of corresponding user-defined F-Task
+
+F-Task:
+	- Task managed by FreeRTOS
+
+DD-Task Lists:
+	1. Active Task List
+	   - A list of DD-Tasks which the DDS currently needs to schedule.
+	   - Needs to be sorted by deadline every time a DD-Task is added or removed
+
+	2. Completed Task List
+	   - A list of DD-Tasks which have completed execution before their deadlines.
+	   - Primarily used for debugging/testing, not used in practice due to overhead
+
+	3. Overdue Task List
+	   - A list of DD-Tasks which have missed their deadlines
+
+	* DD-Tasks which successfully complete their execution before their deadline must be removed from the
+	  Active Task List and added to the Completed Task List. DD-Tasks which do not meet their deadlines must
+	  be removed from the Active Task List and added to the Overdue Task List.
+
+	* Can be returned by Refference or Value, need to justify
+	  --> RETURN BY REFERENCE
+
+Main Tasks (4):
+	1. Deadline-Driven Scheduler
+	   - Implements the EDF algorithm and controls the priorities of user-defined F-tasks from an activelymanaged list of DD-Tasks.
+	   - Set prioritie of referenced F-Task to 'high', others to 'low'
+
+
+	Auxillary F-Tasks (Testing):
+
+	2. User-Defined Tasks
+	   - Contains the actual deadline-sensitive application code written by the user.
+	   - Must call complete_dd_task once it hs finished
+
+	3. Deadline-Driven Task Generator
+	   - Periodically creates DD-Tasks that need to be scheduled by the DD Scheduler.
+	   - Normally suspended, resumed whenever a timer callback is triggered
+	   - Timer should be configured to expire based on particular DD-Tasks time period
+	   - Prepares all nexesary info for creating specific instances of DD-Tasks, then calls release_dd_task
+	   * Can use single generator to create all DD-Tasks or Multiple generators
+		 --> MULTIPLE GENERATORS
+	   * F-Task handles stored inside each DD-Task may be either created once when app is initialized and re-used
+		 OR F-Task handles continuously created and deleted every time a DD-Task is released and completed (FreeRTOS need to be configured to use heap_4.c instead of heap_1.c for this)
+		 --> CREATED ONCE, heap_1.c
+
+	4. Monitor Task
+	   - F-Task to extract information from the DDS and report scheduling information.
+	   - Responsible for:
+		1) Number of DD-Tasks
+		2) Number of completed DD-Tasks
+		3) Number of overdue DD-Tasks
+	   - Collects info from DDS using:
+		1) get_active_dd_task_list
+		2) get_complete_dd_task_list
+		3) get_overdue_dd_task_list
+	   - Print Number of tasks to console
+	   - Must be allowed to execute even if there are active or overdue tasks
+
+	* All 3 Aux tasks should not have access to any internal DS, only interface with DDS via 4 main functions
+
+Core Functionality:
+
+	1. 	release_dd_task
+
+	This function receives all of the information necessary to create a new dd_task struct (excluding
+	the release time and completion time). The struct is packaged as a message and sent to a queue
+	for the DDS to receive.
+
+	2. 	complete_dd_task
+
+	This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
+	as a message and sent to a queue for the DDS to receive.
+
+	3. 	get_active_dd_task_list
+
+	This function sends a message to a queue requesting the Active Task List from the DDS. Once a
+	response is received from the DDS, the function returns the list.
+
+	4. 	get_completed_dd_task_list
+
+	This function sends a message to a queue requesting the Completed Task List from the DDS. Once
+	a response is received from the DDS, the function returns the list.
+
+	5. 	get_overdue_dd_task_list
+
+	This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
+	response is received from the DDS, the function returns the list
+
+*/
 /* Standard includes. */
 #include <stdint.h>
 #include <stdio.h>
@@ -11,13 +108,133 @@
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
 
+/* Prototypes. */
+void dd_scheduler(void *pvParameters);
+void dd_task_generator(void *pvParameters);
+void user_defined(void *pvParameters);
+void monitor_tasks(void *pvParameters);
+void release_dd_task(TaskHandle_t t_handle,
+					 task_type type,
+					 uint32_t task_id,
+					 uint32_t absolute_deadline);
+
+void complete_dd_task(uint32_t task_id);
+**list get_active_list(void);
+**list get_completed_list(void);
+**list get_overdue_list(void);
+
+typedef enum task_type
+{
+	PERIODIC,
+	APERIODIC
+} task_type;
+
+// TODO: Extend to include additional info (list of interrupt times ect usefull for debugging Monitor Task)
+typedef struct dd_task
+{
+	TaskHandle_t t_handle;
+	task_type type;
+	uint32_t task_id;
+	uint32_t release_time;
+	uint32_t absolute_deadline;
+	uint32_t completion_time;
+} dd_task;
+
+typedef struct dd_task_list
+{
+	dd_task task;
+	struct dd_task_list *next_task;
+} list;
+
+xQueueHandle xQueueMessages;
+BaseType_t dd_scheduler_task;
+BaseType_t dd_task_generator_task;
+BaseType_t user_defined_task;
+BaseType_t monitor_task;
+
 int main(void)
 {
+	/* Initialize Queue*/
+
+	// TODO: check if queuesize of 1 is correct
+
+	xQueueMessages = xQueueCreate(1, sizeof(list));
+
+	if (xQueueMessages == NULL)
+	{
+
+		printf("Error creating queues");
+		return 0;
+	}
+	// TODO: Check if stack size is correct
+	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	dd_task_generator_task = xTaskCreate(dd_task_generator, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	user_defined_task = xTaskCreate(user_defined "user_defined", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	monitortask = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+
+	if ((dd_scheduler_task == NULL) | (dd_task_generator_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
+	{
+		printf("Error creating tasks");
+		return 0;
+	}
 
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
 
 	return 0;
+}
+
+void dd_scheduler(void *pvParameters)
+{
+}
+void dd_task_generator(void *pvParameters)
+{
+}
+void user_defined(void *pvParameters)
+{
+}
+void monitor_tasks(void *pvParameters)
+{
+}
+
+/* Core Functionality */
+
+/*
+This function receives all of the information necessary to create a new dd_task struct (excluding
+the release time and completion time). The struct is packaged as a message and sent to a queue
+for the DDS to receive.
+*/
+
+void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline)
+{
+}
+
+/*
+This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
+as a message and sent to a queue for the DDS to receive.
+*/
+
+void complete_dd_task(uint32_t task_id){
+	/* delete task from active_list and add to completed */
+}
+
+	/*
+	This function sends a message to a queue requesting the Active Task List from the DDS. Once a
+	response is received from the DDS, the function returns the list.
+	*/
+	* *list get_active_list(){
+
+	  }
+
+	/*
+	This function sends a message to a queue requesting the Completed Task List from the DDS. Once
+	a response is received from the DDS, the function returns the list.
+	*/
+	* *list get_completed_list(){} /*
+								   This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
+								   response is received from the DDS, the function returns the list*/
+	* *list get_overdue__list()
+{
 }
 
 /*-----------------------------------------------------------*/
