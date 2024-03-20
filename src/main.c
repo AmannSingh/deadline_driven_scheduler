@@ -167,7 +167,9 @@ typedef struct dd_task_list
 
 /* Prototypes. */
 void dd_scheduler(void *pvParameters);
-void dd_task_generator(void *pvParameters);
+void dd_task_generator1(void *pvParameters);
+void dd_task_generator2(void *pvParameters);
+void dd_task_generator3(void *pvParameters);
 void user_defined(void *pvParameters);
 void monitor(void *pvParameters);
 void release_dd_task(TaskHandle_t t_handle,
@@ -182,7 +184,9 @@ list **get_overdue_list(void);
 
 xQueueHandle xQueueMessages;
 BaseType_t dd_scheduler_task;
-BaseType_t dd_task_generator_task;
+BaseType_t dd_task_generator_task1;
+BaseType_t dd_task_generator_task2;
+BaseType_t dd_task_generator_task3;
 BaseType_t user_defined_task;
 BaseType_t monitor_task;
 
@@ -200,15 +204,11 @@ int main(void)
 	}
 	// TODO: Check if stack size is correct
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	dd_task_generator_task = xTaskCreate(dd_task_generator, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
+	dd_task_generator_task1 = xTaskCreate(dd_task_generator1, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 2, &dd_task_generator1);
+	dd_task_generator_task2 = xTaskCreate(dd_task_generator2, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 2, &dd_task_generator2);
+	dd_task_generator_task3 = xTaskCreate(dd_task_generator3, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 2, &dd_task_generator1);
 	user_defined_task = xTaskCreate(user_defined, "user_defined", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
 	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-
-	if ((dd_scheduler_task == NULL) | (dd_task_generator_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
-	{
-		printf("Error creating tasks");
-		return 0;
-	}
 
 	/* Start the tasks and timer running. */
 	vTaskStartScheduler();
@@ -217,7 +217,9 @@ int main(void)
 }
 
 void dd_scheduler(void *pvParameters){};
-void dd_task_generator(void *pvParameters){};
+void dd_task_generator1(void *pvParameters){};
+void dd_task_generator2(void *pvParameters){};
+void dd_task_generator3(void *pvParameters){};
 void user_defined(void *pvParameters){};
 void monitor(void *pvParameters){};
 
@@ -228,7 +230,10 @@ This function receives all of the information necessary to create a new dd_task 
 the release time and completion time). The struct is packaged as a message and sent to a queue
 for the DDS to receive.
 */
-void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline){};
+void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline)
+{
+
+};
 
 /*
 This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
