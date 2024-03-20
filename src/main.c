@@ -29,18 +29,17 @@ DD-Task Lists:
 	  --> RETURN BY REFERENCE
 
 Main Tasks (4):
-	1. Deadline-Driven Scheduler
+	1. Deadline-Driven Scheduler (Priority: 1)
 	   - Implements the EDF algorithm and controls the priorities of user-defined F-tasks from an activelymanaged list of DD-Tasks.
 	   - Set prioritie of referenced F-Task to 'high', others to 'low'
 
-
 	Auxillary F-Tasks (Testing):
 
-	2. User-Defined Tasks
+	2. User-Defined Tasks (Priority: 3)
 	   - Contains the actual deadline-sensitive application code written by the user.
 	   - Must call complete_dd_task once it hs finished
 
-	3. Deadline-Driven Task Generator
+	3. Deadline-Driven Task Generator (Priority: 2)
 	   - Periodically creates DD-Tasks that need to be scheduled by the DD Scheduler.
 	   - Normally suspended, resumed whenever a timer callback is triggered
 	   - Timer should be configured to expire based on particular DD-Tasks time period
@@ -51,7 +50,7 @@ Main Tasks (4):
 		 OR F-Task handles continuously created and deleted every time a DD-Task is released and completed (FreeRTOS need to be configured to use heap_4.c instead of heap_1.c for this)
 		 --> CREATED ONCE, heap_1.c
 
-	4. Monitor Task
+	4. Monitor Task (Priority: 1)
 	   - F-Task to extract information from the DDS and report scheduling information.
 	   - Responsible for:
 		1) Number of DD-Tasks
@@ -108,21 +107,7 @@ Core Functionality:
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
 
-/* Prototypes. */
-void dd_scheduler(void *pvParameters);
-void dd_task_generator(void *pvParameters);
-void user_defined(void *pvParameters);
-void monitor_tasks(void *pvParameters);
-void release_dd_task(TaskHandle_t t_handle,
-					 task_type type,
-					 uint32_t task_id,
-					 uint32_t absolute_deadline);
-
-void complete_dd_task(uint32_t task_id);
-**list get_active_list(void);
-**list get_completed_list(void);
-**list get_overdue_list(void);
-
+/* Typedefs */
 typedef enum task_type
 {
 	PERIODIC,
@@ -146,6 +131,21 @@ typedef struct dd_task_list
 	struct dd_task_list *next_task;
 } list;
 
+/* Prototypes. */
+void dd_scheduler(void *pvParameters);
+void dd_task_generator(void *pvParameters);
+void user_defined(void *pvParameters);
+void monitor_tasks(void *pvParameters);
+void release_dd_task(TaskHandle_t t_handle,
+					 task_type type,
+					 uint32_t task_id,
+					 uint32_t absolute_deadline);
+
+void complete_dd_task(uint32_t task_id);
+**list get_active_list(void);
+**list get_completed_list(void);
+**list get_overdue_list(void);
+
 xQueueHandle xQueueMessages;
 BaseType_t dd_scheduler_task;
 BaseType_t dd_task_generator_task;
@@ -155,9 +155,7 @@ BaseType_t monitor_task;
 int main(void)
 {
 	/* Initialize Queue*/
-
 	// TODO: check if queuesize of 1 is correct
-
 	xQueueMessages = xQueueCreate(1, sizeof(list));
 
 	if (xQueueMessages == NULL)
@@ -168,8 +166,8 @@ int main(void)
 	}
 	// TODO: Check if stack size is correct
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	dd_task_generator_task = xTaskCreate(dd_task_generator, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	user_defined_task = xTaskCreate(user_defined "user_defined", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	dd_task_generator_task = xTaskCreate(dd_task_generator, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
+	user_defined_task = xTaskCreate(user_defined "user_defined", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
 	monitortask = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
 	if ((dd_scheduler_task == NULL) | (dd_task_generator_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
@@ -237,7 +235,7 @@ void complete_dd_task(uint32_t task_id){
 {
 }
 
-/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 void vApplicationMallocFailedHook(void)
 {
