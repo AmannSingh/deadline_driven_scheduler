@@ -108,6 +108,7 @@ Core Functionality:
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
 
+/* TEST BENCH */
 #define TEST_BENCH 1
 
 #ifdef TEST_BENCH
