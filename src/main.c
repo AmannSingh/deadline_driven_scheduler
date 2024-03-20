@@ -142,9 +142,9 @@ void release_dd_task(TaskHandle_t t_handle,
 					 uint32_t absolute_deadline);
 
 void complete_dd_task(uint32_t task_id);
-**list get_active_list(void);
-**list get_completed_list(void);
-**list get_overdue_list(void);
+list** get_active_list(void);
+list** get_completed_list(void);
+list**  get_overdue_list(void);
 
 xQueueHandle xQueueMessages;
 BaseType_t dd_scheduler_task;
@@ -208,19 +208,19 @@ void complete_dd_task(uint32_t task_id){
 This function sends a message to a queue requesting the Active Task List from the DDS. Once a
 response is received from the DDS, the function returns the list.
 */
-**list get_active_list(){};
+list** get_active_list(){};
 
 /*
 This function sends a message to a queue requesting the Completed Task List from the DDS. Once
 a response is received from the DDS, the function returns the list.
 */
-**list get_completed_list(){};
+list** get_completed_list(){};
 
 /*
 This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
 response is received from the DDS, the function returns the list
 */
-**list get_overdue__list(){};
+list**  get_overdue__list(){};
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
