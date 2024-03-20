@@ -194,14 +194,12 @@ This function receives all of the information necessary to create a new dd_task 
 the release time and completion time). The struct is packaged as a message and sent to a queue
 for the DDS to receive.
 */
-
 void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline){};
 
 /*
 This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
 as a message and sent to a queue for the DDS to receive.
 */
-
 void complete_dd_task(uint32_t task_id){
 	/* delete task from active_list and add to completed */
 };
@@ -216,9 +214,12 @@ response is received from the DDS, the function returns the list.
 This function sends a message to a queue requesting the Completed Task List from the DDS. Once
 a response is received from the DDS, the function returns the list.
 */
-**list get_completed_list(){}; /*
-							  This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
-							  response is received from the DDS, the function returns the list*/
+**list get_completed_list(){};
+
+/*
+This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
+response is received from the DDS, the function returns the list
+*/
 **list get_overdue__list(){};
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
