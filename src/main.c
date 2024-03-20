@@ -94,6 +94,7 @@ Core Functionality:
 	response is received from the DDS, the function returns the list
 
 */
+
 /* Standard includes. */
 #include <stdint.h>
 #include <stdio.h>
@@ -106,6 +107,38 @@ Core Functionality:
 #include "../FreeRTOS_Source/include/semphr.h"
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
+
+#define TEST_BENCH 1
+
+#ifdef TEST_BENCH
+#if TEST_BENCH == 1
+/* Test Bench #1 */
+#define t1_execution 95
+#define t1_period 500
+#define t2_execution 150
+#define t2_period 500
+#define t3_execution 250
+#define t3_period 750
+#elif TEST_BENCH == 2
+/* Test Bench #2 */
+#define t1_execution 95
+#define t1_period 250
+#define t2_execution 150
+#define t2_period 500
+#define t3_execution 250
+#define t3_period 750
+#elif TEST_BENCH == 3
+/* Test Bench #3 */
+#define t1_execution 100
+#define t1_period 500
+#define t2_execution 200
+#define t2_period 500
+#define t3_execution 200
+#define t3_period 500
+#else
+#error "Invalid test bench specified"
+#endif
+#endif
 
 /* Typedefs */
 typedef enum task_type
@@ -142,9 +175,9 @@ void release_dd_task(TaskHandle_t t_handle,
 					 uint32_t absolute_deadline);
 
 void complete_dd_task(uint32_t task_id);
-list** get_active_list(void);
-list** get_completed_list(void);
-list**  get_overdue_list(void);
+list **get_active_list(void);
+list **get_completed_list(void);
+list **get_overdue_list(void);
 
 xQueueHandle xQueueMessages;
 BaseType_t dd_scheduler_task;
@@ -208,19 +241,19 @@ void complete_dd_task(uint32_t task_id){
 This function sends a message to a queue requesting the Active Task List from the DDS. Once a
 response is received from the DDS, the function returns the list.
 */
-list** get_active_list(){};
+list **get_active_list(){};
 
 /*
 This function sends a message to a queue requesting the Completed Task List from the DDS. Once
 a response is received from the DDS, the function returns the list.
 */
-list** get_completed_list(){};
+list **get_completed_list(){};
 
 /*
 This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
 response is received from the DDS, the function returns the list
 */
-list**  get_overdue__list(){};
+list **get_overdue__list(){};
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
