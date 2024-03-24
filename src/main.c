@@ -176,15 +176,14 @@ typedef struct dd_message
 {
 	dd_task task;
 	message_type type;
-	list list;
+	dd_task_list list;
 } dd_message;
 
 typedef struct dd_task_list
 {
 	dd_task task;
 	struct dd_task_list *next_task;
-} list;
-
+} dd_task_list;
 
 /* Prototypes. */
 // Task handles ** might not need **
@@ -207,9 +206,9 @@ void release_dd_task(TaskHandle_t t_handle,
 					 uint32_t absolute_deadline);
 
 void complete_dd_task(uint32_t task_id);
-list **get_active_list(void);
-list **get_completed_list(void);
-list **get_overdue_list(void);
+dd_task_list **get_active_list(void);
+dd_task_list **get_completed_list(void);
+dd_task_list **get_overdue_list(void);
 
 xQueueHandle xQueueMessages;
 BaseType_t dd_scheduler_task;
@@ -242,7 +241,7 @@ void myDDS_Init()
 {
 	/* Initialize Queue*/
 	// TODO: increase size if needed
-	xQueueMessages = xQueueCreate(50, sizeof(list));
+	xQueueMessages = xQueueCreate(50, sizeof(dd_task_list));
 
 	if (xQueueMessages == NULL)
 	{
@@ -267,34 +266,40 @@ void myDDS_Init()
 
 void dd_scheduler(void *pvParameters){};
 void monitor(void *pvParameters){};
-void dd_task_generator1(void *pvParameters){
-	TickType_t current_tick; 
+void dd_task_generator1(void *pvParameters)
+{
+	TickType_t current_tick;
 
-	while(1){
+	while (1)
+	{
 		current_tick = xTaskGetTickCount();
 		TickType_t absolute_deadline = current_tick + t1_period;
-		release_dd_task(pxTaskGen1,PERIODIC, ++ID1, absolute_deadline);
+		release_dd_task(pxTaskGen1, PERIODIC, ++ID1, absolute_deadline);
 		vTaskSuspend(pxTaskGen1);
 	}
 };
 
-void dd_task_generator2(void *pvParameters){
-	TickType_t current_tick; 
-	
-	while(1){
+void dd_task_generator2(void *pvParameters)
+{
+	TickType_t current_tick;
+
+	while (1)
+	{
 		current_tick = xTaskGetTickCount();
 		TickType_t absolute_deadline = current_tick + t2_period;
-		release_dd_task(pxTaskGen2,PERIODIC, ++ID2, absolute_deadline);
+		release_dd_task(pxTaskGen2, PERIODIC, ++ID2, absolute_deadline);
 		vTaskSuspend(pxTaskGen2);
 	}
 };
-void dd_task_generator3(void *pvParameters){
-	TickType_t current_tick; 
-	
-	while(1){
+void dd_task_generator3(void *pvParameters)
+{
+	TickType_t current_tick;
+
+	while (1)
+	{
 		current_tick = xTaskGetTickCount();
 		TickType_t absolute_deadline = current_tick + t3_period;
-		release_dd_task(pxTaskGen3,PERIODIC, ++ID3, absolute_deadline);
+		release_dd_task(pxTaskGen3, PERIODIC, ++ID3, absolute_deadline);
 		vTaskSuspend(pxTaskGen3);
 	}
 };
@@ -352,19 +357,21 @@ void complete_dd_task(uint32_t task_id)
 This function sends a message to a queue requesting the Active Task List from the DDS. Once a
 response is received from the DDS, the function returns the list.
 */
-list **get_active_list(){};
+dd_task_list **get_active_list(){
+
+};
 
 /*
 This function sends a message to a queue requesting the Completed Task List from the DDS. Once
 a response is received from the DDS, the function returns the list.
 */
-list **get_completed_list(){};
+dd_task_list **get_completed_list(){};
 
 /*
 This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
 response is received from the DDS, the function returns the list
 */
-list **get_overdue__list(){};
+dd_task_list **get_overdue__list(){};
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
