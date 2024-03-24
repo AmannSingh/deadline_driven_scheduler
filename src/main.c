@@ -303,11 +303,19 @@ void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, ui
 }
 
 /*
-This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
+This function receives the ID of the DD-Task which has completed its execution. The ID is packaged
 as a message and sent to a queue for the DDS to receive.
 */
-void complete_dd_task(uint32_t task_id){
+void complete_dd_task(uint32_t task_id)
+{
 	/* delete task from active_list and add to completed */
+
+	dd_task task;
+	task.task_id = task_id;
+
+	dd_message new_message = {complete, &task};
+
+	xQueueSendToBack(xQueueMessages, &new_message, portMAX_DELAY);
 };
 
 /*
