@@ -217,6 +217,7 @@ BaseType_t dd_task_gen3_task;
 BaseType_t user_defined_task;
 BaseType_t monitor_task;
 
+/* Task IDs */
 uint32_t ID1 = 1000;
 uint32_t ID2 = 2000;
 uint32_t ID3 = 3000;
