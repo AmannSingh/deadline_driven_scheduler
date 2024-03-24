@@ -217,6 +217,10 @@ BaseType_t dd_task_gen3_task;
 BaseType_t user_defined_task;
 BaseType_t monitor_task;
 
+uint32_t ID1 = 1000;
+uint32_t ID2 = 2000;
+uint32_t ID3 = 3000;
+
 int main(void)
 {
 
@@ -274,7 +278,13 @@ for the DDS to receive.
 */
 void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline){
 
-};
+	dd_task new_task = {
+		t_handle,
+		type,
+		task_id,
+		0,
+		absolute_deadline,
+		completion_time}};
 
 /*
 This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
