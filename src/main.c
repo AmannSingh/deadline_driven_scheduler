@@ -176,6 +176,7 @@ typedef struct dd_message
 {
 	dd_task task;
 	message_type type;
+	list list;
 } dd_message;
 
 typedef struct dd_task_list
@@ -183,6 +184,7 @@ typedef struct dd_task_list
 	dd_task task;
 	struct dd_task_list *next_task;
 } list;
+
 
 /* Prototypes. */
 // Task handles ** might not need **
@@ -272,8 +274,10 @@ void dd_task_generator1(void *pvParameters){
 		current_tick = xTaskGetTickCount();
 		TickType_t absolute_deadline = current_tick + t1_period;
 		release_dd_task(pxTaskGen1,PERIODIC, ++ID1, absolute_deadline);
+		vTaskSuspend(pxTaskGen1);
 	}
 };
+
 void dd_task_generator2(void *pvParameters){
 	TickType_t current_tick; 
 	
@@ -281,6 +285,7 @@ void dd_task_generator2(void *pvParameters){
 		current_tick = xTaskGetTickCount();
 		TickType_t absolute_deadline = current_tick + t2_period;
 		release_dd_task(pxTaskGen2,PERIODIC, ++ID2, absolute_deadline);
+		vTaskSuspend(pxTaskGen2);
 	}
 };
 void dd_task_generator3(void *pvParameters){
@@ -290,6 +295,7 @@ void dd_task_generator3(void *pvParameters){
 		current_tick = xTaskGetTickCount();
 		TickType_t absolute_deadline = current_tick + t3_period;
 		release_dd_task(pxTaskGen3,PERIODIC, ++ID3, absolute_deadline);
+		vTaskSuspend(pxTaskGen3);
 	}
 };
 void user_defined(void *pvParameters){};
