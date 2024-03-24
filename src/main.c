@@ -277,7 +277,17 @@ This function receives all of the information necessary to create a new dd_task 
 the release time and completion time). The struct is packaged as a message and sent to a queue
 for the DDS to receive.
 */
-void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline){
+
+/*
+	TaskHandle_t t_handle;
+	task_type type;
+	uint32_t task_id;
+	uint32_t release_time;
+	uint32_t absolute_deadline;
+	uint32_t completion_time;
+*/
+void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline)
+{
 
 	dd_task new_task = {
 		t_handle,
@@ -285,7 +295,12 @@ void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, ui
 		task_id,
 		0,
 		absolute_deadline,
-		completion_time}};
+		0};
+
+	dd_message new_message = {release, &new_task};
+
+	xQueueSendToBack(xQueueMessages, &new_message, portMAX_DELAY);
+}
 
 /*
 This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
