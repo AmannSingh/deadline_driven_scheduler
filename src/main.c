@@ -152,6 +152,15 @@ typedef enum task_type
 	APERIODIC
 } task_type;
 
+typedef enum message_type
+{
+	release,
+	complete,
+	get_active,
+	get_completed,
+	get_overdue
+} message_type;
+
 // TODO: Extend to include additional info (list of interrupt times ect usefull for debugging Monitor Task)
 typedef struct dd_task
 {
@@ -162,6 +171,12 @@ typedef struct dd_task
 	uint32_t absolute_deadline;
 	uint32_t completion_time;
 } dd_task;
+
+typedef struct dd_message
+{
+	dd_task task;
+	message_type type;
+} dd_message;
 
 typedef struct dd_task_list
 {
@@ -219,8 +234,8 @@ int main(void)
 void myDDS_Init()
 {
 	/* Initialize Queue*/
-	// TODO: check if queuesize of 1 is correct
-	xQueueMessages = xQueueCreate(1, sizeof(list));
+	// TODO: increase size if needed
+	xQueueMessages = xQueueCreate(50, sizeof(list));
 
 	if (xQueueMessages == NULL)
 	{
