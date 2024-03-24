@@ -39,7 +39,7 @@ Main Tasks (4):
 	   - Contains the actual deadline-sensitive application code written by the user.
 	   - Must call complete_dd_task once it hs finished
 
-	3. Deadline-Driven Task Generator (Priority: 2)
+	3. Deadline-Driven Task Generator (Priority: 3)
 	   - Periodically creates DD-Tasks that need to be scheduled by the DD Scheduler.
 	   - Normally suspended, resumed whenever a timer callback is triggered
 	   - Timer should be configured to expire based on particular DD-Tasks time period
@@ -50,7 +50,7 @@ Main Tasks (4):
 		 OR F-Task handles continuously created and deleted every time a DD-Task is released and completed (FreeRTOS need to be configured to use heap_4.c instead of heap_1.c for this)
 		 --> CREATED ONCE, heap_1.c
 
-	4. Monitor Task (Priority: 1)
+	4. Monitor Task (Priority: 4)
 	   - F-Task to extract information from the DDS and report scheduling information.
 	   - Responsible for:
 		1) Number of DD-Tasks
@@ -107,6 +107,10 @@ Core Functionality:
 #include "../FreeRTOS_Source/include/semphr.h"
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
+
+#define PRIORITY_HIGH 4
+#define PRIORITY_MED 3
+#define PRIORITY_LOW 1
 
 /* TEST BENCH */
 #define TEST_BENCH 1
@@ -166,8 +170,18 @@ typedef struct dd_task_list
 } list;
 
 /* Prototypes. */
+// Task handles ** might not need **
+TaskHandle_t pxDDS;
+TaskHandle_t pxMonitor;
+TaskHandle_t pxUser;
+TaskHandle_t pxTaskGen1;
+TaskHandle_t pxTaskGen2;
+TaskHandle_t pxTaskGen3;
+
 void dd_scheduler(void *pvParameters);
-void dd_task_generator(void *pvParameters);
+void dd_task_generator_1(void *pvParameters);
+void dd_task_generator_2(void *pvParameters);
+void dd_task_generator_3(void *pvParameters);
 void user_defined(void *pvParameters);
 void monitor(void *pvParameters);
 void release_dd_task(TaskHandle_t t_handle,
@@ -182,11 +196,27 @@ list **get_overdue_list(void);
 
 xQueueHandle xQueueMessages;
 BaseType_t dd_scheduler_task;
-BaseType_t dd_task_generator_task;
+BaseType_t dd_task_gen1_task;
+BaseType_t dd_task_gen2_task;
+BaseType_t dd_task_gen3_task;
 BaseType_t user_defined_task;
 BaseType_t monitor_task;
 
 int main(void)
+{
+
+	myDDS_Init();
+
+	/* Start the tasks and timers*/
+	vTaskStartScheduler();
+	while (1)
+	{
+	}
+
+	return 0;
+}
+
+void myDDS_Init()
 {
 	/* Initialize Queue*/
 	// TODO: check if queuesize of 1 is correct
@@ -198,23 +228,20 @@ int main(void)
 		printf("Error creating queues");
 		return 0;
 	}
-	// TODO: Check if stack size is correct
-	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	dd_task_generator_task = xTaskCreate(dd_task_generator, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
-	user_defined_task = xTaskCreate(user_defined, "user_defined", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
-	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	/* Initialize Tasks*/
+	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, pxDDS);
+	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, NULL);
+	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen1);
+	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen2);
+	dd_task_gen3_task = xTaskCreate(dd_task_generator_3, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen3);
+	user_defined_task = xTaskCreate(user_defined, "user_defined", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, NULL);
 
-	if ((dd_scheduler_task == NULL) | (dd_task_generator_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
+	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen2_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
 	{
 		printf("Error creating tasks");
 		return 0;
 	}
-
-	/* Start the tasks and timer running. */
-	vTaskStartScheduler();
-
-	return 0;
-}
+};
 
 void dd_scheduler(void *pvParameters){};
 void dd_task_generator(void *pvParameters){};
