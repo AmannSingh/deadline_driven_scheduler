@@ -244,11 +244,11 @@ void myDDS_Init()
 };
 
 void dd_scheduler(void *pvParameters){};
+void monitor(void *pvParameters){};
 void dd_task_generator1(void *pvParameters){};
 void dd_task_generator2(void *pvParameters){};
 void dd_task_generator3(void *pvParameters){};
 void user_defined(void *pvParameters){};
-void monitor(void *pvParameters){};
 
 /* Core Functionality */
 
