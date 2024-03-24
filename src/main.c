@@ -242,12 +242,8 @@ void myDDS_Init()
 {
 	/* Initialize Queue*/
 	// TODO: increase size if needed
-<<<<<<< HEAD
 	xQueueMessages = xQueueCreate(50, sizeof(dd_task_list));
-=======
-	xQueueMessages = xQueueCreate(50, sizeof(list));
-	xQueueResponses = xQueueCreate(50, sizeof(list));
->>>>>>> 72a5a127d893c5bbbae3e37edf2250d51be5b7e3
+	xQueueResponses = xQueueCreate(50, sizeof(dd_task_list));
 
 	if (xQueueMessages == NULL | xQueueResponses == NULL)
 	{
