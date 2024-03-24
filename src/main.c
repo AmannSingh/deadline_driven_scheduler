@@ -231,9 +231,9 @@ void myDDS_Init()
 	/* Initialize Tasks*/
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, pxDDS);
 	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, NULL);
-	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen1);
-	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen2);
-	dd_task_gen3_task = xTaskCreate(dd_task_generator_3, "dd_task_generator", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen3);
+	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_gen1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen1);
+	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_gen2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen2);
+	dd_task_gen3_task = xTaskCreate(dd_task_generator_3, "dd_task_gen3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen3);
 	user_defined_task = xTaskCreate(user_defined, "user_defined", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, NULL);
 
 	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen2_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
@@ -244,7 +244,9 @@ void myDDS_Init()
 };
 
 void dd_scheduler(void *pvParameters){};
-void dd_task_generator(void *pvParameters){};
+void dd_task_generator1(void *pvParameters){};
+void dd_task_generator2(void *pvParameters){};
+void dd_task_generator3(void *pvParameters){};
 void user_defined(void *pvParameters){};
 void monitor(void *pvParameters){};
 
@@ -255,7 +257,9 @@ This function receives all of the information necessary to create a new dd_task 
 the release time and completion time). The struct is packaged as a message and sent to a queue
 for the DDS to receive.
 */
-void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline){};
+void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline){
+
+};
 
 /*
 This function receivesthe ID of the DD-Task which has completed its execution. The ID is packaged
