@@ -279,8 +279,8 @@ void dd_task_generator2(void *pvParameters){
 	
 	while(1){
 		current_tick = xTaskGetTickCount();
-		TickType_t absolute_deadline = current_tick + t1_period;
-		release_dd_task(pxTaskGen1,PERIODIC, ++ID1, absolute_deadline);
+		TickType_t absolute_deadline = current_tick + t2_period;
+		release_dd_task(pxTaskGen1,PERIODIC, ++ID2, absolute_deadline);
 	}
 };
 void dd_task_generator3(void *pvParameters){
@@ -288,8 +288,8 @@ void dd_task_generator3(void *pvParameters){
 	
 	while(1){
 		current_tick = xTaskGetTickCount();
-		TickType_t absolute_deadline = current_tick + t1_period;
-		release_dd_task(pxTaskGen1,PERIODIC, ++ID1, absolute_deadline);
+		TickType_t absolute_deadline = current_tick + t3_period;
+		release_dd_task(pxTaskGen1,PERIODIC, ++ID3, absolute_deadline);
 	}
 };
 void user_defined(void *pvParameters){};
