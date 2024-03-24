@@ -212,6 +212,7 @@ list **get_completed_list(void);
 list **get_overdue_list(void);
 
 xQueueHandle xQueueMessages;
+xQueueHandle xQueueResponses;
 BaseType_t dd_scheduler_task;
 BaseType_t dd_task_gen1_task;
 BaseType_t dd_task_gen2_task;
@@ -243,8 +244,9 @@ void myDDS_Init()
 	/* Initialize Queue*/
 	// TODO: increase size if needed
 	xQueueMessages = xQueueCreate(50, sizeof(list));
+	xQueueResponses = xQueueCreate(50, sizeof(list));
 
-	if (xQueueMessages == NULL)
+	if (xQueueMessages == NULL | xQueueResponses == NULL)
 	{
 
 		printf("Error creating queues");
