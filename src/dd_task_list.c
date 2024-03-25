@@ -90,7 +90,7 @@ void traverse_list(dd_task_node *head) {
     }
 }
 
-dd_task_node* create_empty_ist(){
+dd_task_node* create_empty_list(){
 
     dd_task_node *empty_list = (dd_task_node*)malloc(sizeof(dd_task_node));
 

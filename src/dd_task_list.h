@@ -48,6 +48,6 @@ void delete_at_front(dd_task_node **head);
 dd_task pop(dd_task_node **head);
 void sort_EDF(dd_task_node **head);
 void traverse_list(dd_task_node *head);
-dd_task_node* create_empty_ist();
+dd_task_node* create_empty_list();
 
 #endif //DD_TASK_LIST_H
