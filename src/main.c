@@ -95,21 +95,8 @@ Core Functionality:
 
 */
 
-/* Standard includes. */
-#include <stdint.h>
-#include <stdio.h>
-#include "stm32f4_discovery.h"
-
-/* Kernel includes. */
-#include "stm32f4xx.h"
-#include "../FreeRTOS_Source/include/FreeRTOS.h"
-#include "../FreeRTOS_Source/include/queue.h"
-#include "../FreeRTOS_Source/include/semphr.h"
-#include "../FreeRTOS_Source/include/task.h"
-#include "../FreeRTOS_Source/include/timers.h"
-
 /* Custom includes. */
-#include "./dd_task_list.h"
+#include "dd_task_list.h"
 
 #define PRIORITY_HIGH 4
 #define PRIORITY_MED 3
@@ -148,21 +135,21 @@ Core Functionality:
 #error "Invalid test bench specified"
 #endif
 #endif
-
-typedef enum message_type
+typedef enum message_type message_type;
+enum message_type
 {
 	release,
 	complete,
 	get_active,
 	get_completed,
 	get_overdue
-} message_type;
+};
 
 typedef struct dd_message
 {
 	dd_task task;
 	message_type type;
-	dd_task_node list;
+	dd_task_node *list;
 } dd_message;
 
 /* Prototypes. */
@@ -173,7 +160,7 @@ TaskHandle_t pxUser;
 TaskHandle_t pxTaskGen1;
 TaskHandle_t pxTaskGen2;
 TaskHandle_t pxTaskGen3;
-
+void myDDS_Init();
 void dd_scheduler(void *pvParameters);
 void dd_task_generator_1(void *pvParameters);
 void dd_task_generator_2(void *pvParameters);
@@ -227,7 +214,6 @@ void myDDS_Init()
 	{
 
 		printf("Error creating queues");
-		return 0;
 	}
 	/* Initialize Tasks*/
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, pxDDS);
@@ -237,16 +223,15 @@ void myDDS_Init()
 	dd_task_gen3_task = xTaskCreate(dd_task_generator_3, "dd_task_gen3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen3);
 	user_defined_task = xTaskCreate(user_defined, "user_defined", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser);
 
-	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen2_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
+	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
 	{
 		printf("Error creating tasks");
-		return 0;
 	}
 };
 
 void dd_scheduler(void *pvParameters){};
 void monitor(void *pvParameters){};
-void dd_task_generator1(void *pvParameters)
+void dd_task_generator_1(void *pvParameters)
 {
 	TickType_t current_tick;
 
@@ -259,7 +244,7 @@ void dd_task_generator1(void *pvParameters)
 	}
 };
 
-void dd_task_generator2(void *pvParameters)
+void dd_task_generator_2(void *pvParameters)
 {
 	TickType_t current_tick;
 
@@ -271,7 +256,7 @@ void dd_task_generator2(void *pvParameters)
 		vTaskSuspend(pxTaskGen2);
 	}
 };
-void dd_task_generator3(void *pvParameters)
+void dd_task_generator_3(void *pvParameters)
 {
 	TickType_t current_tick;
 
@@ -321,7 +306,9 @@ void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, ui
 		absolute_deadline,
 		0};
 
-	dd_message new_message = {release, &new_task};
+	dd_message new_message;
+	new_message.type = release;
+	new_message.task = new_task;
 
 	xQueueSendToBack(xQueueMessages, &new_message, portMAX_DELAY);
 }
@@ -337,7 +324,9 @@ void complete_dd_task(uint32_t task_id)
 	dd_task task;
 	task.task_id = task_id;
 
-	dd_message new_message = {complete, &task};
+	dd_message new_message;
+	new_message.type = complete;
+	new_message.task = task;
 
 	xQueueSendToBack(xQueueMessages, &new_message, portMAX_DELAY);
 };
@@ -348,7 +337,7 @@ response is received from the DDS, the function returns the list.
 */
 dd_task_node **get_active_list()
 {
-	dd_task_node *active_list;
+	dd_task_node **active_list;
 	dd_message message;
 	message.type = get_active;
 
@@ -367,7 +356,7 @@ a response is received from the DDS, the function returns the list.
 */
 dd_task_node **get_completed_list()
 {
-	dd_task_node *completed_list;
+	dd_task_node **completed_list;
 	dd_message message;
 	message.type = get_completed;
 
@@ -386,7 +375,7 @@ response is received from the DDS, the function returns the list
 */
 dd_task_node **get_overdue__list()
 {
-	dd_task_node *overdue_list;
+	dd_task_node **overdue_list;
 	dd_message message;
 	message.type = get_overdue;
 
