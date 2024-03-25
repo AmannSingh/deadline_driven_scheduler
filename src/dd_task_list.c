@@ -79,8 +79,6 @@ void sort_EDF(dd_task_node **head)
     } while (is_swapped);
 }
 
-#include <stdio.h>
-
 void traverse_list(dd_task_node *head) {
     dd_task_node *current = head;
     while (current != NULL) {
