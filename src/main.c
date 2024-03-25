@@ -114,6 +114,7 @@ Core Functionality:
 #define PRIORITY_HIGH 4
 #define PRIORITY_MED 3
 #define PRIORITY_LOW 1
+#define MESSAGE_QUEUE_SIZE 50
 
 /* TEST BENCH */
 #define TEST_BENCH 1
@@ -205,7 +206,6 @@ uint32_t ID3 = 3000;
 
 int main(void)
 {
-
 	myDDS_Init();
 
 	/* Start the tasks and timers*/
@@ -220,9 +220,8 @@ int main(void)
 void myDDS_Init()
 {
 	/* Initialize Queue*/
-	// TODO: increase size if needed
-	xQueueMessages = xQueueCreate(50, sizeof(dd_task_node));
-	xQueueResponses = xQueueCreate(50, sizeof(dd_task_node));
+	xQueueMessages = xQueueCreate(MESSAGE_QUEUE_SIZE, sizeof(dd_task_node));
+	xQueueResponses = xQueueCreate(MESSAGE_QUEUE_SIZE, sizeof(dd_task_node));
 
 	if (xQueueMessages == NULL | xQueueResponses == NULL)
 	{
