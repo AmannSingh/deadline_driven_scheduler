@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "stm32f4_discovery.h"
+
 /* Kernel includes. */
 #include "stm32f4xx.h"
 #include "../FreeRTOS_Source/include/FreeRTOS.h"
@@ -13,9 +14,6 @@
 #include "../FreeRTOS_Source/include/semphr.h"
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
-
-//
-// typedef enum task_type task_type;
 
 typedef enum task_type
 {
