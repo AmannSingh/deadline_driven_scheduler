@@ -1,28 +1,5 @@
 #include "dd_task_list.h"
 
-typedef enum task_type
-{
-    PERIODIC,
-    APERIODIC
-} task_type;
-
-typedef struct dd_task
-{
-    TaskHandle_t t_handle;
-    task_type type;
-    uint32_t task_id;
-    uint32_t release_time;
-    uint32_t absolute_deadline;
-    uint32_t completion_time;
-} dd_task;
-
-typedef struct dd_task_node
-{
-    dd_task task;
-    struct dd_task_node *next_task;
-
-} dd_task_node;
-
 void insert_at_front(dd_task_node **head, dd_task new_task)
 {
     dd_task_node *new_node = (dd_task_node *)malloc(sizeof(dd_task_node));

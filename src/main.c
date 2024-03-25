@@ -148,13 +148,6 @@ Core Functionality:
 #endif
 #endif
 
-/* Typedefs */
-typedef enum task_type
-{
-	PERIODIC,
-	APERIODIC
-} task_type;
-
 typedef enum message_type
 {
 	release,
@@ -163,19 +156,6 @@ typedef enum message_type
 	get_completed,
 	get_overdue
 } message_type;
-
-// TODO: Extend to include additional info (list of interrupt times ect usefull for debugging Monitor Task)
-typedef struct dd_task
-{
-	TaskHandle_t t_handle;
-	task_type type;
-	uint32_t task_id;
-	uint32_t release_time;
-	uint32_t absolute_deadline;
-	uint32_t completion_time;
-	uint32_t execution_time;
-
-} dd_task;
 
 typedef struct dd_message
 {
