@@ -383,14 +383,6 @@ for the DDS to receive.
 void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint16_t task_number)
 {
 
-	//	dd_task new_task = {
-	//		t_handle,
-	//		type,
-	//		task_id,
-	//		0,
-	//		absolute_deadline,
-	//		0};
-
 	dd_task new_task;
 	new_task.t_handle = t_handle;
 	new_task.type = type;
