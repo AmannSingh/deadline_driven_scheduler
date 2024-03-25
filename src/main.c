@@ -161,14 +161,8 @@ typedef struct dd_message
 {
 	dd_task task;
 	message_type type;
-	dd_task_list list;
+	dd_task_node list;
 } dd_message;
-
-typedef struct dd_task_list
-{
-	dd_task task;
-	struct dd_task_list *next_task;
-} dd_task_list;
 
 /* Prototypes. */
 // Task handles ** might not need **
@@ -191,9 +185,9 @@ void release_dd_task(TaskHandle_t t_handle,
 					 uint32_t absolute_deadline);
 
 void complete_dd_task(uint32_t task_id);
-dd_task_list **get_active_list(void);
-dd_task_list **get_completed_list(void);
-dd_task_list **get_overdue_list(void);
+dd_task_node **get_active_list(void);
+dd_task_node **get_completed_list(void);
+dd_task_node **get_overdue_list(void);
 
 xQueueHandle xQueueMessages;
 xQueueHandle xQueueResponses;
@@ -227,8 +221,8 @@ void myDDS_Init()
 {
 	/* Initialize Queue*/
 	// TODO: increase size if needed
-	xQueueMessages = xQueueCreate(50, sizeof(dd_task_list));
-	xQueueResponses = xQueueCreate(50, sizeof(dd_task_list));
+	xQueueMessages = xQueueCreate(50, sizeof(dd_task_node));
+	xQueueResponses = xQueueCreate(50, sizeof(dd_task_node));
 
 	if (xQueueMessages == NULL | xQueueResponses == NULL)
 	{
@@ -294,7 +288,7 @@ void dd_task_generator3(void *pvParameters)
 // TODO
 void user_defined(void *pvParameters)
 {
-	dd_task_list *activeList;
+	dd_task_node *activeList;
 	dd_task activeTask;
 
 	activeList = get_active_list();
@@ -353,9 +347,9 @@ void complete_dd_task(uint32_t task_id)
 This function sends a message to a queue requesting the Active Task List from the DDS. Once a
 response is received from the DDS, the function returns the list.
 */
-dd_task_list **get_active_list()
+dd_task_node **get_active_list()
 {
-	dd_task_list *active_list;
+	dd_task_node *active_list;
 	dd_message message;
 	message.type = get_active;
 
@@ -372,9 +366,9 @@ dd_task_list **get_active_list()
 This function sends a message to a queue requesting the Completed Task List from the DDS. Once
 a response is received from the DDS, the function returns the list.
 */
-dd_task_list **get_completed_list()
+dd_task_node **get_completed_list()
 {
-	dd_task_list *completed_list;
+	dd_task_node *completed_list;
 	dd_message message;
 	message.type = get_completed;
 
@@ -391,9 +385,9 @@ dd_task_list **get_completed_list()
 This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
 response is received from the DDS, the function returns the list
 */
-dd_task_list **get_overdue__list()
+dd_task_node **get_overdue__list()
 {
-	dd_task_list *overdue_list;
+	dd_task_node *overdue_list;
 	dd_message message;
 	message.type = get_overdue;
 
