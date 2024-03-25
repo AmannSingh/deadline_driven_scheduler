@@ -160,6 +160,7 @@ TaskHandle_t pxUser;
 TaskHandle_t pxTaskGen1;
 TaskHandle_t pxTaskGen2;
 TaskHandle_t pxTaskGen3;
+
 void myDDS_Init();
 void dd_scheduler(void *pvParameters);
 void dd_task_generator_1(void *pvParameters);
@@ -311,7 +312,6 @@ void dd_task_generator_3(void *pvParameters)
 	}
 };
 
-// TODO
 void user_defined(void *pvParameters)
 {
 	dd_task_node *activeList;
