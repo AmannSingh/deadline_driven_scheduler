@@ -75,32 +75,33 @@ dd_task pop(dd_task_node **head)
     free(temp);
     return task;
 }
-
-void sort_list(dd_task_node **head)
+/* Sort by absolute deadline, using bubble sort. */
+void sort_EDF(dd_task_node **head)
 {
-    int swapped;
-    dd_task_node *ptr1;
-    dd_task_node *lptr = NULL;
+    int is_swapped;
+    dd_task_node *current;
+    dd_task_node *last_sorted = NULL;
 
     if (*head == NULL)
         return;
 
     do
     {
-        swapped = 0;
-        ptr1 = *head;
+        is_swapped = 0;
+        current = *head;
 
-        while (ptr1->next_task != lptr)
+        while (current->next_task != last_sorted)
         {
-            if (ptr1->task.absolute_deadline > ptr1->next_task->task.absolute_deadline)
+            if (current->task.absolute_deadline > current->next_task->task.absolute_deadline)
             {
-                dd_task temp = ptr1->task;
-                ptr1->task = ptr1->next_task->task;
-                ptr1->next_task->task = temp;
-                swapped = 1;
+                // Swap tasks
+                dd_task temp_task = current->task;
+                current->task = current->next_task->task;
+                current->next_task->task = temp_task;
+                is_swapped = 1;
             }
-            ptr1 = ptr1->next_task;
+            current = current->next_task;
         }
-        lptr = ptr1;
-    } while (swapped);
+        last_sorted = current;
+    } while (is_swapped);
 }
