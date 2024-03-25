@@ -95,6 +95,7 @@ Core Functionality:
 
 */
 
+
 /* Custom includes. */
 #include "dd_task_list.h"
 
@@ -170,7 +171,9 @@ void monitor(void *pvParameters);
 void release_dd_task(TaskHandle_t t_handle,
 					 task_type type,
 					 uint32_t task_id,
-					 uint32_t absolute_deadline);
+					 uint16_t task_number);
+int get_execution_time(uint16_t  task_number);
+int get_period(uint16_t  task_number);
 
 void complete_dd_task(uint32_t task_id);
 dd_task_node **get_active_list(void);
@@ -214,9 +217,11 @@ void myDDS_Init()
 	{
 
 		printf("Error creating queues");
+
 	}
 	/* Initialize Tasks*/
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, pxDDS);
+	vTaskSuspend(pxDDS);
 	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, NULL);
 	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_gen1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen1);
 	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_gen2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen2);
@@ -226,45 +231,85 @@ void myDDS_Init()
 	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
 	{
 		printf("Error creating tasks");
+
 	}
+
+	printf("dds init\n");
 };
 
-void dd_scheduler(void *pvParameters){};
+void dd_scheduler(void *pvParameters){
+
+	dd_task_node *active_list;
+	dd_task_node *completed_list;
+	dd_task_node *overdue_list;
+	dd_message message;
+	int period;
+
+
+	while(1){
+
+		if(xQueueReceive(xQueueMessages,&message,portMAX_DELAY))
+		{
+			period = get_period(message.task.task_number);
+
+			switch(message.type)
+			{
+				case release:
+
+					traverse_list(active_list);
+					dd_task_node **active_list_head = &active_list;
+					message.task.release_time = xTaskGetTickCount();
+					message.task.absolute_deadline = xTaskGetTickCount() +  period;
+					insert_at_back(active_list_head, message.task);
+					sort_EDF(active_list_head);
+					traverse_list(active_list);
+
+					break;
+
+				case complete:
+					break;
+				case get_active:
+					break;
+				case get_completed:
+					break;
+				case get_overdue:
+					break;
+				default:
+					break;
+			}
+		}
+	}
+};
 void monitor(void *pvParameters){};
 void dd_task_generator_1(void *pvParameters)
 {
-	TickType_t current_tick;
 
 	while (1)
 	{
-		current_tick = xTaskGetTickCount();
-		TickType_t absolute_deadline = current_tick + t1_period;
-		release_dd_task(pxTaskGen1, PERIODIC, ++ID1, absolute_deadline);
+		printf("gen1");
+		release_dd_task(pxTaskGen1, PERIODIC, ++ID1,1);
 		vTaskSuspend(pxTaskGen1);
+
 	}
 };
 
 void dd_task_generator_2(void *pvParameters)
 {
-	TickType_t current_tick;
 
 	while (1)
 	{
-		current_tick = xTaskGetTickCount();
-		TickType_t absolute_deadline = current_tick + t2_period;
-		release_dd_task(pxTaskGen2, PERIODIC, ++ID2, absolute_deadline);
+		printf("gen2");
+		release_dd_task(pxTaskGen2, PERIODIC, ++ID2,2);
 		vTaskSuspend(pxTaskGen2);
 	}
 };
 void dd_task_generator_3(void *pvParameters)
 {
-	TickType_t current_tick;
 
 	while (1)
 	{
-		current_tick = xTaskGetTickCount();
-		TickType_t absolute_deadline = current_tick + t3_period;
-		release_dd_task(pxTaskGen3, PERIODIC, ++ID3, absolute_deadline);
+		printf("gen3");
+		release_dd_task(pxTaskGen3, PERIODIC, ++ID3,3);
 		vTaskSuspend(pxTaskGen3);
 	}
 };
@@ -295,20 +340,27 @@ for the DDS to receive.
 	uint32_t absolute_deadline;
 	uint32_t completion_time;
 */
-void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint32_t absolute_deadline)
+void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint16_t task_number)
 {
 
-	dd_task new_task = {
-		t_handle,
-		type,
-		task_id,
-		0,
-		absolute_deadline,
-		0};
+//	dd_task new_task = {
+//		t_handle,
+//		type,
+//		task_id,
+//		0,
+//		absolute_deadline,
+//		0};
+
+	dd_task new_task;
+	new_task.t_handle = t_handle;
+	new_task.type = type;
+	new_task.task_id = task_id;
+	new_task.task_number = task_number;
 
 	dd_message new_message;
 	new_message.type = release;
 	new_message.task = new_task;
+
 
 	xQueueSendToBack(xQueueMessages, &new_message, portMAX_DELAY);
 }
@@ -387,6 +439,34 @@ dd_task_node **get_overdue__list()
 
 	return overdue_list;
 };
+
+int get_period(uint16_t  task_number){
+
+	if(task_number == 1 ){
+		return t1_period;
+	}
+	else if(task_number == 2 ){
+		return t2_period;
+	}
+	else if(task_number == 3 ){
+			return t3_period;
+		}
+	else return 0;
+}
+
+int get_execution_time(uint16_t  task_number){
+
+	if(task_number == 1 ){
+		return t1_execution;
+	}
+	else if(task_number == 2 ){
+		return t2_execution;
+	}
+	else if(task_number == 3 ){
+		return t3_execution;
+	}
+	else return 0;
+}
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
