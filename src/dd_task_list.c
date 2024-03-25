@@ -4,6 +4,7 @@
 #include "../FreeRTOS_Source/include/task.h"
 #include "dd_task_list.h"
 
+
 typedef enum task_type
 {
     PERIODIC,
@@ -27,18 +28,43 @@ typedef struct dd_task_node
 
 } dd_task_node;
 
-void insertAtFront()
-{
-    dd_task task;
-    struct dd_task_node *temp;
-    temp = malloc(sizeof(struct node));
-    printf("\nEnter number to"
-           " be inserted : ");
-    scanf("%d", &data);
-    temp->info = data;
-
-    // Pointer of temp will be
-    // assigned to start
-    temp->link = start;
-    start = temp;
+void insert_at_front(dd_task_node **head, dd_task new_task) {
+    dd_task_node *new_node = (dd_task_node*)malloc(sizeof(dd_task_node));
+    if (new_node == NULL) {
+        printf("Memory allocation failed.\n");
+        return;
+    }
+    new_node->task = new_task;
+    new_node->next_task = *head;
+    *head = new_node;
 }
+
+void insert_at_back(dd_task_node **head, dd_task new_task) {
+    dd_task_node *new_node = (dd_task_node*)malloc(sizeof(dd_task_node));
+    dd_task_node *last = *head;
+    
+    new_node->task = new_task;
+    new_node->next_task = NULL;
+    
+    if (*head == NULL) {
+        *head = new_node;
+        return;
+    }
+    
+    while (last->next_task != NULL) {
+        last = last->next_task;
+    }
+    last->next_task = new_node;
+}
+
+void delete_at_front(dd_task_node **head) {
+    if (*head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    dd_task_node *temp = *head;
+    *head = (*head)->next_task;
+    free(temp);
+}
+
+
