@@ -204,18 +204,18 @@ uint32_t ID3 = 3000;
 
 int main(void)
 {
-    myDDS_Init();
+	myDDS_Init();
 
-    /* Start the tasks and timers*/
-    xTimerStart(timer_generator1,0);
-    xTimerStart(timer_generator2,0);
-    xTimerStart(timer_generator3,0);
-    vTaskStartScheduler();
-    while (1)
-    {
-    }
+	/* Start the tasks and timers*/
+	xTimerStart(timer_generator1, 0);
+	xTimerStart(timer_generator2, 0);
+	xTimerStart(timer_generator3, 0);
+	vTaskStartScheduler();
+	while (1)
+	{
+	}
 
-    return 0;
+	return 0;
 }
 
 void myDDS_Init()
@@ -244,9 +244,9 @@ void myDDS_Init()
 	}
 
 	/* Timers for each generator using the period for each task */
-    timer_generator1 = xTimerCreate("timer1", pdMS_TO_TICKS(t1_period), pdTRUE, 0, generator1_callback);
-    timer_generator2 = xTimerCreate("timer2", pdMS_TO_TICKS(t2_period), pdTRUE, 0, generator2_callback);
-    timer_generator3 = xTimerCreate("timer3", pdMS_TO_TICKS(t3_period), pdTRUE, 0, generator3_callback);
+	timer_generator1 = xTimerCreate("timer1", pdMS_TO_TICKS(t1_period), pdTRUE, 0, generator1_callback);
+	timer_generator2 = xTimerCreate("timer2", pdMS_TO_TICKS(t2_period), pdTRUE, 0, generator2_callback);
+	timer_generator3 = xTimerCreate("timer3", pdMS_TO_TICKS(t3_period), pdTRUE, 0, generator3_callback);
 
 	printf("dds init\n");
 };
@@ -295,7 +295,12 @@ void dd_scheduler(void *pvParameters)
 		}
 	}
 };
-void monitor(void *pvParameters){};
+void monitor(void *pvParameters)
+{
+	while (1)
+	{
+	};
+};
 void dd_task_generator_1(void *pvParameters)
 {
 
@@ -527,17 +532,17 @@ int get_execution_time(uint16_t task_number)
 
 void generator1_callback(TimerHandle_t xTimer)
 {
-    vTaskResume(pxTaskGen1);
+	vTaskResume(pxTaskGen1);
 }
 
 void generator2_callback(TimerHandle_t xTimer)
 {
-    vTaskResume(pxTaskGen2);
+	vTaskResume(pxTaskGen2);
 }
 
 void generator3_callback(TimerHandle_t xTimer)
 {
-    vTaskResume(pxTaskGen3);
+	vTaskResume(pxTaskGen3);
 }
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
