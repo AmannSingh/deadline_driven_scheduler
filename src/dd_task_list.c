@@ -78,3 +78,19 @@ void sort_EDF(dd_task_node **head)
         last_sorted = current;
     } while (is_swapped);
 }
+
+#include <stdio.h>
+
+void traverse_list(dd_task_node *head) {
+    dd_task_node *current = head;
+    while (current != NULL) {
+        printf("Task ID: %u\n", current->task.task_id);
+        printf("Task Type: %s\n", current->task.type == PERIODIC ? "PERIODIC" : "APERIODIC");
+        printf("Release Time: %u\n", current->task.release_time);
+        printf("Absolute Deadline: %u\n", current->task.absolute_deadline);
+        printf("Completion Time: %u\n", current->task.completion_time);
+        printf("\n"); // Extra newline for better readability
+
+        current = current->next_task; // Move to the next node
+    }
+}
