@@ -274,7 +274,6 @@ void dd_scheduler(void *pvParameters)
 			switch (message.type)
 			{
 			case release:
-
 				message.task.release_time = xTaskGetTickCount();
 				message.task.absolute_deadline = xTaskGetTickCount() + period;
 				insert_at_back(active_list_head, message.task);
@@ -282,7 +281,6 @@ void dd_scheduler(void *pvParameters)
 				break;
 
 			case complete:
-
 				task = pop(active_list_head);
 				sort_EDF(active_list);
 				insert_at_back(complete,task);
@@ -361,6 +359,8 @@ void user_defined(void *pvParameters)
 		/***check tto see if absolute deadline missed 
 		* if it is send message to dds 
 		*/
+
+	
 		activeList = get_active_list();
 		activeTask = activeList->task;
 		task_num = activeTask.task_number;
