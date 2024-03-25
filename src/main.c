@@ -170,6 +170,8 @@ typedef struct dd_task
 	uint32_t release_time;
 	uint32_t absolute_deadline;
 	uint32_t completion_time;
+	uint32_t execution_time;
+
 } dd_task;
 
 typedef struct dd_message
@@ -305,7 +307,16 @@ void dd_task_generator3(void *pvParameters)
 		vTaskSuspend(pxTaskGen3);
 	}
 };
-void user_defined(void *pvParameters){};
+
+// TODO
+void user_defined(void *pvParameters)
+{
+	dd_task_list *activeList;
+	dd_task activeTask;
+
+	activeList = get_active_list();
+	activeTask = activeList->task;
+};
 
 /* Core Functionality */
 
