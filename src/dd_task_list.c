@@ -67,4 +67,29 @@ void delete_at_front(dd_task_node **head) {
     free(temp);
 }
 
+void sort_list(dd_task_node **head) {
+    int swapped;
+    dd_task_node *ptr1;
+    dd_task_node *lptr = NULL;
+    
+    if (*head == NULL) return;
+    
+    do {
+        swapped = 0;
+        ptr1 = *head;
+        
+        while (ptr1->next_task != lptr) {
+            if (ptr1->task.absolute_deadline > ptr1->next_task->task.absolute_deadline) {
+                dd_task temp = ptr1->task;
+                ptr1->task = ptr1->next_task->task;
+                ptr1->next_task->task = temp;
+                swapped = 1;
+            }
+            ptr1 = ptr1->next_task;
+        }
+        lptr = ptr1;
+    } while (swapped);
+}
+
+
 
