@@ -274,9 +274,52 @@ void user_defined(void *pvParameters)
 {
 	dd_task_node *activeList;
 	dd_task activeTask;
+	uint16_t task_num;
+	uint16_t count;
 
-	activeList = get_active_list();
-	activeTask = activeList->task;
+	TickType_t currTick;
+	TickType_t prevTick;
+
+	TickType_t executionTick;
+
+	while (1)
+	{
+		activeList = get_active_list();
+		activeTask = activeList->task;
+		task_num = activeTask.task_num;
+		count = 0;
+
+		switch (task_num)
+		{
+		case 1:
+			executionTick = pdMS_TO_TICKS(t1_execution);
+			break;
+		case 2:
+			executionTick = pdMS_TO_TICKS(t2_execution);
+			break;
+		case 3:
+			executionTick = pdMS_TO_TICKS(t3_execution);
+			break;
+		default:
+			printf("ERROR: could not get task number in user defined task.");
+			break;
+		}
+
+		currTick = xTaskGetTickCount();
+		prevTick = currTick;
+
+		// Will exit once task is complete
+		while (count < executionTick)
+		{
+			currTick = xTaskGetTickCount();
+			if (currTick != prevTick)
+			{
+				count++;
+				prevTick = currTick;
+			}
+		}
+		complete_dd_task(activeTask.task_id);
+	}
 };
 
 /* Core Functionality */
