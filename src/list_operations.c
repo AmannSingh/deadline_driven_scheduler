@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "stm32f4_discovery.h"
 #include "../FreeRTOS_Source/include/task.h"
+#include "list_operations.h"
 
 typedef enum task_type
 {
