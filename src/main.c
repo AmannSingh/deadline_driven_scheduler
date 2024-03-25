@@ -108,6 +108,9 @@ Core Functionality:
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
 
+/* Custom includes. */
+#include "./dd_task_list.h"
+
 #define PRIORITY_HIGH 4
 #define PRIORITY_MED 3
 #define PRIORITY_LOW 1

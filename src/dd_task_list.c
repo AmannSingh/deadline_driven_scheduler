@@ -61,16 +61,19 @@ void insert_at_back(dd_task_node **head, dd_task new_task)
     last->next_task = new_node;
 }
 
-void delete_at_front(dd_task_node **head)
+dd_task pop(dd_task_node **head)
 {
+    dd_task task;
     if (*head == NULL)
     {
         printf("List is empty.\n");
         return;
     }
     dd_task_node *temp = *head;
+    task = temp->task;
     *head = (*head)->next_task;
     free(temp);
+    return task;
 }
 
 void sort_list(dd_task_node **head)
