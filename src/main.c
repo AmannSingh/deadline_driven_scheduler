@@ -387,7 +387,7 @@ dd_task_list **get_completed_list()
 	// Send 'get_active' message to DDS
 	xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
 
-	// Wait for reponse from DDS then return active list
+	// Wait for reponse from DDS then return completed list
 	xQueueReceive(xQueueResponses, &completed_list, portMAX_DELAY);
 
 	return completed_list;
@@ -397,7 +397,20 @@ dd_task_list **get_completed_list()
 This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
 response is received from the DDS, the function returns the list
 */
-dd_task_list **get_overdue__list(){};
+dd_task_list **get_overdue__list()
+{
+	dd_task_list *overdue_list;
+	dd_message message;
+	message.type = get_overdue;
+
+	// Send 'get_active' message to DDS
+	xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
+
+	// Wait for reponse from DDS then return overdue list
+	xQueueReceive(xQueueResponses, &overdue_list, portMAX_DELAY);
+
+	return overdue_list;
+};
 
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
