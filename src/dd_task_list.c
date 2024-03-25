@@ -4,7 +4,6 @@
 #include "../FreeRTOS_Source/include/task.h"
 #include "dd_task_list.h"
 
-
 typedef enum task_type
 {
     PERIODIC,
@@ -28,9 +27,11 @@ typedef struct dd_task_node
 
 } dd_task_node;
 
-void insert_at_front(dd_task_node **head, dd_task new_task) {
-    dd_task_node *new_node = (dd_task_node*)malloc(sizeof(dd_task_node));
-    if (new_node == NULL) {
+void insert_at_front(dd_task_node **head, dd_task new_task)
+{
+    dd_task_node *new_node = (dd_task_node *)malloc(sizeof(dd_task_node));
+    if (new_node == NULL)
+    {
         printf("Memory allocation failed.\n");
         return;
     }
@@ -39,26 +40,31 @@ void insert_at_front(dd_task_node **head, dd_task new_task) {
     *head = new_node;
 }
 
-void insert_at_back(dd_task_node **head, dd_task new_task) {
-    dd_task_node *new_node = (dd_task_node*)malloc(sizeof(dd_task_node));
+void insert_at_back(dd_task_node **head, dd_task new_task)
+{
+    dd_task_node *new_node = (dd_task_node *)malloc(sizeof(dd_task_node));
     dd_task_node *last = *head;
-    
+
     new_node->task = new_task;
     new_node->next_task = NULL;
-    
-    if (*head == NULL) {
+
+    if (*head == NULL)
+    {
         *head = new_node;
         return;
     }
-    
-    while (last->next_task != NULL) {
+
+    while (last->next_task != NULL)
+    {
         last = last->next_task;
     }
     last->next_task = new_node;
 }
 
-void delete_at_front(dd_task_node **head) {
-    if (*head == NULL) {
+void delete_at_front(dd_task_node **head)
+{
+    if (*head == NULL)
+    {
         printf("List is empty.\n");
         return;
     }
@@ -67,19 +73,24 @@ void delete_at_front(dd_task_node **head) {
     free(temp);
 }
 
-void sort_list(dd_task_node **head) {
+void sort_list(dd_task_node **head)
+{
     int swapped;
     dd_task_node *ptr1;
     dd_task_node *lptr = NULL;
-    
-    if (*head == NULL) return;
-    
-    do {
+
+    if (*head == NULL)
+        return;
+
+    do
+    {
         swapped = 0;
         ptr1 = *head;
-        
-        while (ptr1->next_task != lptr) {
-            if (ptr1->task.absolute_deadline > ptr1->next_task->task.absolute_deadline) {
+
+        while (ptr1->next_task != lptr)
+        {
+            if (ptr1->task.absolute_deadline > ptr1->next_task->task.absolute_deadline)
+            {
                 dd_task temp = ptr1->task;
                 ptr1->task = ptr1->next_task->task;
                 ptr1->next_task->task = temp;
@@ -90,6 +101,3 @@ void sort_list(dd_task_node **head) {
         lptr = ptr1;
     } while (swapped);
 }
-
-
-
