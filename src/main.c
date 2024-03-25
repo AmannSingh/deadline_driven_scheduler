@@ -245,8 +245,7 @@ void myDDS_Init()
 	xQueueMessages = xQueueCreate(50, sizeof(dd_task_list));
 	xQueueResponses = xQueueCreate(50, sizeof(dd_task_list));
 
-
-	if (xQueueMessages == NULL| xQueueResponses == NULL)
+	if (xQueueMessages == NULL | xQueueResponses == NULL)
 	{
 
 		printf("Error creating queues");
@@ -379,7 +378,20 @@ dd_task_list **get_active_list()
 This function sends a message to a queue requesting the Completed Task List from the DDS. Once
 a response is received from the DDS, the function returns the list.
 */
-dd_task_list **get_completed_list(){};
+dd_task_list **get_completed_list()
+{
+	dd_task_list *completed_list;
+	dd_message message;
+	message.type = get_completed;
+
+	// Send 'get_active' message to DDS
+	xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
+
+	// Wait for reponse from DDS then return active list
+	xQueueReceive(xQueueResponses, &completed_list, portMAX_DELAY);
+
+	return completed_list;
+};
 
 /*
 This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
