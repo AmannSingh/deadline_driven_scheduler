@@ -95,6 +95,8 @@ Core Functionality:
 
 */
 
+// ms = tick * portTICK_PERIOD_MS
+
 /* Custom includes. */
 #include "dd_task_list.h"
 
@@ -180,6 +182,7 @@ void release_dd_task(TaskHandle_t t_handle,
 					 uint16_t task_number);
 int get_execution_time(uint16_t task_number);
 int get_period(uint16_t task_number);
+void print_event(int event_num, int task_num, message_type type, int measured_time);
 
 void complete_dd_task(uint32_t task_id);
 dd_task_node **get_active_list(void);
@@ -211,6 +214,8 @@ uint32_t ID1 = 1000;
 uint32_t ID2 = 2000;
 uint32_t ID3 = 3000;
 
+int hyper_period_complete = 0;
+
 int main(void)
 {
 	myDDS_Init();
@@ -220,6 +225,7 @@ int main(void)
 	xTimerStart(timer_generator1, 0);
 	xTimerStart(timer_generator2, 0);
 	xTimerStart(timer_generator3, 0);
+	xTimerStart(timer_monitor, 0);
 	vTaskStartScheduler();
 	while (1)
 	{
@@ -273,14 +279,15 @@ void results_Init()
 
 void dd_scheduler(void *pvParameters)
 {
-
 	dd_task_node *active_list = create_empty_list();
 	dd_task_node *completed_list = create_empty_list();
 	dd_task_node *overdue_list = create_empty_list();
-
 	dd_message message;
 	dd_task task;
+	TickType_t currTick;
+	TickType_t measured_time;
 	int period;
+	int event_number = 1;
 
 	while (1)
 	{
@@ -294,13 +301,19 @@ void dd_scheduler(void *pvParameters)
 			switch (message.type)
 			{
 			case release:
-				message.task.release_time = xTaskGetTickCount();
-				message.task.absolute_deadline = xTaskGetTickCount() + period;
+				currTick = xTaskGetTickCount();
+				measured_time = currTick * portTICK_PERIOD_MS;
+				print_event(event_number, message.task.task_number, message.type, measured_time);
+				message.task.release_time = currTick;
+				message.task.absolute_deadline = currTick + period;
 				insert_at_back(active_list_head, message.task);
 				sort_EDF(active_list_head);
 				break;
 
 			case complete:
+				currTick = xTaskGetTickCount();
+				measured_time = currTick * portTICK_PERIOD_MS;
+				print_event(event_number, message.task.task_number, message.type, measured_time);
 				task = pop(active_list_head);
 				sort_EDF(active_list);
 				insert_at_back(complete, task);
@@ -584,6 +597,21 @@ int get_execution_time(uint16_t task_number)
 	}
 	else
 		return 0;
+}
+
+void print_event(int event_num, int task_num, message_type type, int measured_time)
+{
+	if (measured_time <= HYPER_PERIOD)
+	{
+		printf("\t%d\t\tTask %d ", event_num, task_num);
+		type == release ? printf("released") : printf("completed");
+		printf("\t\t\t%d", measured_time);
+	}
+	else if (!hyper_period_complete)
+	{
+		hyper_period_complete = 1;
+		printf("HYPER-PERIOD finished.. \n");
+	}
 }
 
 /* Timer callback functions. */
