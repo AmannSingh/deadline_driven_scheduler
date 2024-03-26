@@ -183,6 +183,7 @@ void release_dd_task(TaskHandle_t t_handle,
 int get_execution_time(uint16_t task_number);
 TickType_t get_period_TICKS(uint16_t task_number);
 void print_event(int event_num, int task_num, message_type type, int measured_time);
+void move_ovedue_list(dd_task_node **active_list, dd_task_node **overdue_list);
 
 void complete_dd_task(uint32_t task_id);
 dd_task_node **get_active_list(void);
@@ -293,12 +294,15 @@ void dd_scheduler(void *pvParameters)
 
 	while (1)
 	{
-
 		if (xQueueReceive(xQueueMessages, &message, portMAX_DELAY))
 		{
-			period = get_period_TICKS(message.task.task_number);
-
 			dd_task_node **active_list_head = &active_list;
+
+			// checks if any tasks are overdue, if they are move them to the overdue_list and remove from active list
+			move_overdue_tasks(active_list, overdue_list);
+			// sort list after checking overdue tasks
+			sort_EDF(active_list_head);
+			period = get_period_TICKS(message.task.task_number);
 
 			switch (message.type)
 			{
@@ -427,18 +431,18 @@ void user_defined(void *pvParameters)
 		task_num = activeTask.task_number;
 		count = 0;
 
-		while (activeList != NULL)
-		{
-			if (activeList->task.absolute_deadline < (xTaskGetTickCount() + get_period_TICKS(activeList->task.task_number)))
-			{
+		// while (activeList != NULL)
+		// {
+		// 	if (activeList->task.absolute_deadline < (xTaskGetTickCount() + get_period_TICKS(activeList->task.task_number)))
+		// 	{
 
-				message.task = activeList->task;
-				message.type = get_overdue;
-				message.list = get_overdue_list();
-				xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
-			}
-			activeList = activeList->next_task;
-		}
+		// 		message.task = activeList->task;
+		// 		message.type = get_overdue;
+		// 		message.list = get_overdue_list();
+		// 		xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
+		// 	}
+		// 	activeList = activeList->next_task;
+		// }
 		switch (task_num)
 		{
 		case 1:
@@ -629,6 +633,28 @@ void print_event(int event_num, int task_num, message_type type, int measured_ti
 	{
 		hyper_period_complete = 1;
 		printf("HYPER-PERIOD finished.. \n");
+	}
+}
+
+void move_ovedue_list(dd_task_node **active_list, dd_task_node **overdue_list)
+{
+	dd_task_node *prev = NULL;
+	dd_task_node *curr = *active_list;
+
+	while (curr != NULL)
+	{
+		// Task is overdue TODO: check ticks/ms
+		if ((xTaskGetTickCount() + get_period_TICKS(curr->task.task_number)) > curr->task.absolute_deadline)
+		{
+			// Task is overdue, move it to the overdue_list
+			insert_at_back(overdue_list, curr->task);
+		}
+		else
+		{
+			// Task is not overdue, move to the next task
+			prev = curr;
+			curr = curr->next_task;
+		}
 	}
 }
 
