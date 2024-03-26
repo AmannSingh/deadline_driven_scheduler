@@ -422,27 +422,11 @@ void user_defined(void *pvParameters)
 
 	while (1)
 	{
-		/***check tto see if absolute deadline missed
-		 * if it is send message to dds
-		 */
-
 		activeList = *get_active_list();
 		activeTask = activeList->task;
 		task_num = activeTask.task_number;
 		count = 0;
 
-		// while (activeList != NULL)
-		// {
-		// 	if (activeList->task.absolute_deadline < (xTaskGetTickCount() + get_period_TICKS(activeList->task.task_number)))
-		// 	{
-
-		// 		message.task = activeList->task;
-		// 		message.type = get_overdue;
-		// 		message.list = get_overdue_list();
-		// 		xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
-		// 	}
-		// 	activeList = activeList->next_task;
-		// }
 		switch (task_num)
 		{
 		case 1:
