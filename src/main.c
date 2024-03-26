@@ -626,7 +626,7 @@ void print_event(int event_num, int task_num, message_type type, int measured_ti
 	{
 		printf("\t%d\t\tTask %d ", event_num, task_num);
 		type == release ? printf("released") : printf("completed");
-		printf("\t\t\t%d", measured_time);
+		printf("\t\t\t%d\n", measured_time);
 	}
 	else if (!hyper_period_complete)
 	{
