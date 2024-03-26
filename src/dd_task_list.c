@@ -93,20 +93,3 @@ int get_list_count(dd_task_node *head)
     }
     return count;
 }
-
-dd_task_node* create_empty_list(){
-
-    dd_task_node *empty_list = (dd_task_node*)malloc(sizeof(dd_task_node));
-
-    empty_list->task.absolute_deadline = 0;
-    empty_list->task.completion_time = 0;
-    empty_list->task.release_time = 0;
-    empty_list->task.t_handle = NULL;
-    empty_list->task.task_id = 0;
-    empty_list->task.task_number = 0;
-    empty_list->task.type = 0;
-
-    empty_list->next_task = NULL; 
-
-    return empty_list;
-}
