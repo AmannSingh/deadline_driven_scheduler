@@ -163,7 +163,9 @@ typedef struct dd_message
 // Task handles ** might not need **
 TaskHandle_t pxDDS;
 TaskHandle_t pxMonitor;
-TaskHandle_t pxUser;
+TaskHandle_t pxUser1;
+TaskHandle_t pxUser2;
+TaskHandle_t pxUser3;
 TaskHandle_t pxTaskGen1;
 TaskHandle_t pxTaskGen2;
 TaskHandle_t pxTaskGen3;
@@ -202,7 +204,9 @@ BaseType_t dd_scheduler_task;
 BaseType_t dd_task_gen1_task;
 BaseType_t dd_task_gen2_task;
 BaseType_t dd_task_gen3_task;
-BaseType_t user_defined_task;
+BaseType_t user_defined_task1;
+BaseType_t user_defined_task2;
+BaseType_t user_defined_task3;
 BaseType_t monitor_task;
 
 TimerHandle_t timer_generator1;
@@ -253,7 +257,10 @@ void myDDS_Init()
 	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_gen1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen1);
 	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_gen2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen2);
 	dd_task_gen3_task = xTaskCreate(dd_task_generator_3, "dd_task_gen3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen3);
-	user_defined_task = xTaskCreate(user_defined, "user_defined", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser);
+
+	user_defined_task1 = xTaskCreate(user_defined, "usr_d1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser1);
+	user_defined_task2 = xTaskCreate(user_defined, "usr_d2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser2);
+	user_defined_task3 = xTaskCreate(user_defined, "usr_d3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser3);
 
 	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
 	{
