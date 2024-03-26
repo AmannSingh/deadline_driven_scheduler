@@ -189,6 +189,7 @@ dd_task_node **get_overdue_list(void);
 void generator1_callback(TimerHandle_t xTimer);
 void generator2_callback(TimerHandle_t xTimer);
 void generator3_callback(TimerHandle_t xTimer);
+void monitor_callback(TimerHandle_t xTimer);
 
 xQueueHandle xQueueMessages;
 xQueueHandle xQueueResponses;

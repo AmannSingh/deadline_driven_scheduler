@@ -47,11 +47,6 @@ void insert_at_back(dd_task_node **head, dd_task new_task);
 void delete_at_front(dd_task_node **head);
 dd_task pop(dd_task_node **head);
 void sort_EDF(dd_task_node **head);
-<<<<<<< HEAD
 int get_list_count(dd_task_node *head);
-=======
-void traverse_list(dd_task_node *head);
-dd_task_node* create_empty_list();
->>>>>>> d38b8b021d3e52d0e6422554deea9ba633cbcc86
 
 #endif // DD_TASK_LIST_H
