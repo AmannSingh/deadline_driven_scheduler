@@ -183,7 +183,7 @@ void release_dd_task(TaskHandle_t t_handle,
 int get_execution_time(uint16_t task_number);
 TickType_t get_period_TICKS(uint16_t task_number);
 void print_event(int event_num, int task_num, message_type type, int measured_time);
-void move_ovedue_list(dd_task_node **active_list, dd_task_node **overdue_list);
+void move_overdue_tasks(dd_task_node **active_list, dd_task_node **overdue_list);
 
 void complete_dd_task(uint32_t task_id);
 dd_task_node **get_active_list(void);
@@ -620,7 +620,7 @@ void print_event(int event_num, int task_num, message_type type, int measured_ti
 	}
 }
 
-void move_ovedue_list(dd_task_node **active_list, dd_task_node **overdue_list)
+void move_overdue_tasks(dd_task_node **active_list, dd_task_node **overdue_list)
 {
 	dd_task_node *prev = NULL;
 	dd_task_node *curr = *active_list;
