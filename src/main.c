@@ -343,7 +343,10 @@ void monitor(void *pvParameters)
 		overdue_count = get_list_count(overdue_list);
 
 		printf("MONITOR TASK:\n");
-		printf("\n");
+		printf("Number of active DD-Tasks: %d\n", active_count);
+		printf("Number of completed DD-Tasks: %d\n", completed_count);
+		printf("Number of overdue DD-Tasks: %d\n", overdue_count);
+		printf("\n\n\n");
 
 		vTaskSuspend(NULL);
 	};
