@@ -89,6 +89,7 @@ void set_priority(dd_task_node **head){
 	while(current!=NULL)
 	{
 		vTaskPrioritySet(current->task.t_handle, PRIORITY_LOW);
+		current=current->next_task;
 	}
 
 }
