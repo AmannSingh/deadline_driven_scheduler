@@ -15,13 +15,13 @@
 #include "../FreeRTOS_Source/include/timers.h"
 
 //
-//typedef enum task_type task_type;
+// typedef enum task_type task_type;
 
 typedef enum task_type
 {
     PERIODIC,
     APERIODIC
-}task_type;
+} task_type;
 
 /* TODO: Extend to include additional info (list of interrupt times ect usefull for debugging Monitor Task). */
 typedef struct dd_task
@@ -47,6 +47,6 @@ void insert_at_back(dd_task_node **head, dd_task new_task);
 void delete_at_front(dd_task_node **head);
 dd_task pop(dd_task_node **head);
 void sort_EDF(dd_task_node **head);
-void traverse_list(dd_task_node *head);
+int get_list_count(dd_task_node *head);
 
-#endif //DD_TASK_LIST_H
+#endif // DD_TASK_LIST_H

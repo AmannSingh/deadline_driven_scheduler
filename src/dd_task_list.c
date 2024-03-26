@@ -79,11 +79,15 @@ void sort_EDF(dd_task_node **head)
     } while (is_swapped);
 }
 
-void traverse_list(dd_task_node *head) {
+int get_list_count(dd_task_node *head)
+{
+    int count = 0;
     dd_task_node *current = head;
-    while (current != NULL) {
-        printf("Task ID: %u\n", current->task.task_id);
 
+    while (current != NULL)
+    {
+        count++;
         current = current->next_task; // Move to the next node
     }
+    return count;
 }

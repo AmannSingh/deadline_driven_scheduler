@@ -102,9 +102,14 @@ Core Functionality:
 #define PRIORITY_MED 3
 #define PRIORITY_LOW 1
 #define MESSAGE_QUEUE_SIZE 50
+#define MONITOR_PERIOD pdMS_TO_TICKS(2000)
 
 /* TEST BENCH */
 #define TEST_BENCH 1
+#define HYPER_PERIOD pdMS_TO_TICKS(1500)
+/* Set to 1 for additional print statements,
+   adds overhead set to 0 and use debugger for final results */
+#define PRINT_TEST 1
 
 #ifdef TEST_BENCH
 #if TEST_BENCH == 1
@@ -186,6 +191,7 @@ void generator3_callback(TimerHandle_t xTimer);
 
 xQueueHandle xQueueMessages;
 xQueueHandle xQueueResponses;
+
 BaseType_t dd_scheduler_task;
 BaseType_t dd_task_gen1_task;
 BaseType_t dd_task_gen2_task;
@@ -196,6 +202,7 @@ BaseType_t monitor_task;
 TimerHandle_t timer_generator1;
 TimerHandle_t timer_generator2;
 TimerHandle_t timer_generator3;
+TimerHandle_t timer_monitor;
 
 /* Task IDs */
 uint32_t ID1 = 1000;
@@ -205,6 +212,7 @@ uint32_t ID3 = 3000;
 int main(void)
 {
 	myDDS_Init();
+	results_Init();
 
 	/* Start the tasks and timers*/
 	xTimerStart(timer_generator1, 0);
@@ -231,7 +239,7 @@ void myDDS_Init()
 	}
 	/* Initialize Tasks*/
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, pxDDS);
-	vTaskSuspend(pxDDS);
+	// vTaskSuspend(pxDDS);
 	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, NULL);
 	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_gen1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen1);
 	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_gen2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxTaskGen2);
@@ -248,8 +256,18 @@ void myDDS_Init()
 	timer_generator2 = xTimerCreate("timer2", pdMS_TO_TICKS(t2_period), pdTRUE, 0, generator2_callback);
 	timer_generator3 = xTimerCreate("timer3", pdMS_TO_TICKS(t3_period), pdTRUE, 0, generator3_callback);
 
+	/* Monitor timer. */
+	timer_monitor = xTimerCreate("monitor", MONITOR_PERIOD, pdTRUE, 0, monitor_callback);
+
 	printf("dds init\n");
 };
+
+void results_Init()
+{
+	printf("+-------------------------------------------------------+\n");
+	printf("|\tEvent #\t\t\tEvent\t\t\tMeasured Time (ms)\t|\n");
+	printf("+-------------------------------------------------------+\n");
+}
 
 void dd_scheduler(void *pvParameters)
 {
@@ -297,8 +315,28 @@ void dd_scheduler(void *pvParameters)
 };
 void monitor(void *pvParameters)
 {
+	dd_task_node **active_list;
+	dd_task_node **completed_list;
+	dd_task_node **overdue_list;
+
+	int active_count = 0;
+	int completed_count = 0;
+	int overdue_count = 0;
+
 	while (1)
 	{
+		active_list = get_active_list();
+		completed_list = get_completed_list();
+		overdue_list = get_overdue__list();
+
+		active_count = get_list_count(active_list);
+		completed_count = get_list_count(completed_list);
+		overdue_count = get_list_count(overdue_list);
+
+		printf("MONITOR TASK:\n");
+		printf("\n");
+
+		vTaskSuspend(NULL);
 	};
 };
 void dd_task_generator_1(void *pvParameters)
@@ -530,6 +568,7 @@ int get_execution_time(uint16_t task_number)
 		return 0;
 }
 
+/* Timer callback functions. */
 void generator1_callback(TimerHandle_t xTimer)
 {
 	vTaskResume(pxTaskGen1);
@@ -545,6 +584,10 @@ void generator3_callback(TimerHandle_t xTimer)
 	vTaskResume(pxTaskGen3);
 }
 
+void monitor_callback(TimerHandle_t xTimer)
+{
+	vTaskResume(pxMonitor)
+}
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 void vApplicationMallocFailedHook(void)
