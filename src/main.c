@@ -220,6 +220,7 @@ uint32_t ID2 = 2000;
 uint32_t ID3 = 3000;
 
 int hyper_period_complete = 0;
+dd_task_node ** active_list_global = NULL;
 
 int main(void)
 {
@@ -244,6 +245,9 @@ void myDDS_Init()
 	/* Initialize Queue*/
 	xQueueMessages = xQueueCreate(MESSAGE_QUEUE_SIZE,  sizeof(dd_message));
 	xQueueResponses = xQueueCreate(MESSAGE_QUEUE_SIZE, sizeof(dd_message));
+	vQueueAddToRegistry(xQueueMessages, "messages");
+	vQueueAddToRegistry(xQueueMessages, "responses");
+
 
 	if (xQueueMessages == NULL | xQueueResponses == NULL)
 	{
@@ -541,7 +545,7 @@ response is received from the DDS, the function returns the list.
 dd_task_node *get_active_list()
 {
 	printf("GET_ACTIVE_LIST\n");
-	dd_task_node *active_list;
+//	dd_task_node *active_list;
 	dd_message message;
 	message.type = get_active;
 	message.list = NULL;
@@ -550,11 +554,11 @@ dd_task_node *get_active_list()
 	xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
 
 	// Wait for reponse from DDS then return active list
-	xQueueReceive(xQueueResponses, &active_list, portMAX_DELAY);
+	xQueueReceive(xQueueResponses, &active_list_global, portMAX_DELAY);
 
 	printf("RETURNING ACTIVE LIST\n");
 
-	return active_list;
+	return active_list_global;
 }
 
 /*
