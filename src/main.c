@@ -261,11 +261,14 @@ void myDDS_Init()
 	user_defined_task1 = xTaskCreate(user_defined, "usr_d1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser1);
 	user_defined_task2 = xTaskCreate(user_defined, "usr_d2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser2);
 	user_defined_task3 = xTaskCreate(user_defined, "usr_d3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, pxUser3);
+	vTaskSuspend(pxUser1);
+	vTaskSuspend(pxUser2);
+	vTaskSuspend(pxUser3);
 
-	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
-	{
-		printf("Error creating tasks\n");
-	}
+	// if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
+	// {
+	// 	printf("Error creating tasks\n");
+	// }
 
 	/* Timers for each generator using the period for each task */
 	timer_generator1 = xTimerCreate("timer1", pdMS_TO_TICKS(t1_period), pdTRUE, 0, generator1_callback);
@@ -304,6 +307,7 @@ void dd_scheduler(void *pvParameters)
 		if (xQueueReceive(xQueueMessages, &message, portMAX_DELAY))
 		{
 			dd_task_node **active_list_head = &active_list;
+			dd_task_node **completed_list_head = &completed_list;
 
 			// checks if any tasks are overdue, if they are move them to the overdue_list and remove from active list
 			move_overdue_tasks(active_list, overdue_list);
@@ -321,6 +325,7 @@ void dd_scheduler(void *pvParameters)
 				message.task.absolute_deadline = currTick + period;
 				insert_at_back(active_list_head, message.task);
 				sort_EDF(active_list_head);
+				set_priority(active_list_head);
 				break;
 
 			case complete:
@@ -329,7 +334,8 @@ void dd_scheduler(void *pvParameters)
 				print_event(event_number, message.task.task_number, message.type, measured_time);
 				task = pop(active_list_head);
 				sort_EDF(active_list);
-				insert_at_back(active_list_head, task);
+
+				insert_at_back(completed_list_head, task);
 				break;
 
 				// check on queue type
@@ -349,6 +355,10 @@ void dd_scheduler(void *pvParameters)
 			default:
 				break;
 			}
+		}
+		if (active_list->task.t_handle != NULL)
+		{
+			vTaskResume(active_list->task.t_handle);
 		}
 	}
 };
@@ -387,7 +397,7 @@ void dd_task_generator_1(void *pvParameters)
 	while (1)
 	{
 		printf("gen1\n");
-		release_dd_task(pxTaskGen1, PERIODIC, ++ID1, 1);
+		release_dd_task(pxUser1, PERIODIC, ++ID1, 1);
 		vTaskSuspend(pxTaskGen1);
 	}
 };
@@ -398,7 +408,7 @@ void dd_task_generator_2(void *pvParameters)
 	while (1)
 	{
 		printf("gen2\n");
-		release_dd_task(pxTaskGen2, PERIODIC, ++ID2, 2);
+		release_dd_task(pxUser2, PERIODIC, ++ID2, 2);
 		vTaskSuspend(pxTaskGen2);
 	}
 };
@@ -408,7 +418,7 @@ void dd_task_generator_3(void *pvParameters)
 	while (1)
 	{
 		printf("gen3\n");
-		release_dd_task(pxTaskGen3, PERIODIC, ++ID3, 3);
+		release_dd_task(pxUser3, PERIODIC, ++ID3, 3);
 		vTaskSuspend(pxTaskGen3);
 	}
 };
