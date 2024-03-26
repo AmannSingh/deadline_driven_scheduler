@@ -167,6 +167,7 @@ TaskHandle_t pxTaskGen2;
 TaskHandle_t pxTaskGen3;
 
 void myDDS_Init();
+void results_Init();
 void dd_scheduler(void *pvParameters);
 void dd_task_generator_1(void *pvParameters);
 void dd_task_generator_2(void *pvParameters);
@@ -235,7 +236,7 @@ void myDDS_Init()
 	if (xQueueMessages == NULL | xQueueResponses == NULL)
 	{
 
-		printf("Error creating queues");
+		printf("Error creating queues\n");
 	}
 	/* Initialize Tasks*/
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, pxDDS);
@@ -248,7 +249,7 @@ void myDDS_Init()
 
 	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
 	{
-		printf("Error creating tasks");
+		printf("Error creating tasks\n");
 	}
 
 	/* Timers for each generator using the period for each task */
@@ -356,7 +357,7 @@ void dd_task_generator_1(void *pvParameters)
 
 	while (1)
 	{
-		printf("gen1");
+		printf("gen1\n");
 		release_dd_task(pxTaskGen1, PERIODIC, ++ID1, 1);
 		vTaskSuspend(pxTaskGen1);
 	}
@@ -367,7 +368,7 @@ void dd_task_generator_2(void *pvParameters)
 
 	while (1)
 	{
-		printf("gen2");
+		printf("gen2\n");
 		release_dd_task(pxTaskGen2, PERIODIC, ++ID2, 2);
 		vTaskSuspend(pxTaskGen2);
 	}
@@ -377,7 +378,7 @@ void dd_task_generator_3(void *pvParameters)
 
 	while (1)
 	{
-		printf("gen3");
+		printf("gen3\n");
 		release_dd_task(pxTaskGen3, PERIODIC, ++ID3, 3);
 		vTaskSuspend(pxTaskGen3);
 	}
@@ -418,7 +419,7 @@ void user_defined(void *pvParameters)
 			executionTick = pdMS_TO_TICKS(t3_execution);
 			break;
 		default:
-			printf("ERROR: could not get task number in user defined task.");
+			printf("ERROR: could not get task number in user defined task.\n");
 			break;
 		}
 
