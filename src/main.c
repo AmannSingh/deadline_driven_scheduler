@@ -179,7 +179,7 @@ void release_dd_task(TaskHandle_t t_handle,
 					 uint32_t task_id,
 					 uint16_t task_number);
 int get_execution_time(uint16_t task_number);
-int get_period(uint16_t task_number);
+TickType_t get_period_TICKS(uint16_t task_number);
 
 void complete_dd_task(uint32_t task_id);
 dd_task_node **get_active_list(void);
