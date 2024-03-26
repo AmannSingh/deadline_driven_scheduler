@@ -188,7 +188,7 @@ void print_event(int event_num, int task_num, message_type type, int measured_ti
 void move_overdue_tasks(dd_task_node **active_list, dd_task_node **overdue_list);
 
 void complete_dd_task(uint32_t task_id);
-dd_task_node **get_active_list(void);
+dd_task_node *get_active_list(void);
 dd_task_node **get_completed_list(void);
 dd_task_node **get_overdue_list(void);
 
@@ -364,7 +364,7 @@ void dd_scheduler(void *pvParameters)
 };
 void monitor(void *pvParameters)
 {
-	dd_task_node **active_list;
+	dd_task_node *active_list;
 	dd_task_node **completed_list;
 	dd_task_node **overdue_list;
 
@@ -374,7 +374,7 @@ void monitor(void *pvParameters)
 
 	while (1)
 	{
-		active_list = *get_active_list();
+		active_list = get_active_list();
 		completed_list = *get_completed_list();
 		overdue_list = *get_overdue_list();
 
@@ -425,7 +425,7 @@ void dd_task_generator_3(void *pvParameters)
 
 void user_defined(void *pvParameters)
 {
-	dd_task_node *activeList;
+	dd_task_node **activeList;
 	dd_task activeTask;
 	uint16_t task_num;
 	uint16_t count;
@@ -439,8 +439,9 @@ void user_defined(void *pvParameters)
 
 	while (1)
 	{
-		activeList = *get_active_list();
-		activeTask = activeList->task;
+		printf("USER_DEFINED\n");
+		activeList = get_active_list();
+
 		task_num = activeTask.task_number;
 		count = 0;
 
@@ -473,7 +474,12 @@ void user_defined(void *pvParameters)
 				prevTick = currTick;
 			}
 		}
-		complete_dd_task(activeTask.task_id);
+		if(activeTask.task_id > 1000 && activeTask.task_id < 4000){
+			complete_dd_task(activeTask.task_id);
+		}else{
+			printf("error: cannot complete task in user defined. NO valid task id\n");
+		}
+
 	}
 };
 
@@ -495,7 +501,7 @@ for the DDS to receive.
 */
 void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint16_t task_number)
 {
-
+	printf("RELEASE_DD_TASK\n");
 	dd_task new_task;
 	new_task.t_handle = t_handle;
 	new_task.type = type;
@@ -505,6 +511,7 @@ void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, ui
 	dd_message new_message;
 	new_message.type = release;
 	new_message.task = new_task;
+	new_message.list = NULL;
 
 	xQueueSendToBack(xQueueMessages, &new_message, portMAX_DELAY);
 }
@@ -516,7 +523,7 @@ as a message and sent to a queue for the DDS to receive.
 void complete_dd_task(uint32_t task_id)
 {
 	/* delete task from active_list and add to completed */
-
+	printf("COMPLETE_DD_TASK\n");
 	dd_task task;
 	task.task_id = task_id;
 
@@ -531,9 +538,10 @@ void complete_dd_task(uint32_t task_id)
 This function sends a message to a queue requesting the Active Task List from the DDS. Once a
 response is received from the DDS, the function returns the list.
 */
-dd_task_node **get_active_list()
+dd_task_node *get_active_list()
 {
-	dd_task_node **active_list;
+	printf("GET_ACTIVE_LIST\n");
+	dd_task_node *active_list;
 	dd_message message;
 	message.type = get_active;
 	message.list = NULL;
@@ -544,6 +552,8 @@ dd_task_node **get_active_list()
 	// Wait for reponse from DDS then return active list
 	xQueueReceive(xQueueResponses, &active_list, portMAX_DELAY);
 
+	printf("RETURNING ACTIVE LIST\n");
+
 	return active_list;
 }
 
@@ -553,7 +563,8 @@ a response is received from the DDS, the function returns the list.
 */
 dd_task_node **get_completed_list()
 {
-	dd_task_node **completed_list;
+	printf("GET_COMPLETED_LIST\n");
+	dd_task_node *completed_list;
 	dd_message message;
 	message.type = get_completed;
 
@@ -572,7 +583,8 @@ response is received from the DDS, the function returns the list
 */
 dd_task_node **get_overdue_list()
 {
-	dd_task_node **overdue_list;
+	printf("GET_OVERDUE_LIST\n");
+	dd_task_node *overdue_list;
 	dd_message message;
 	message.type = get_overdue;
 
