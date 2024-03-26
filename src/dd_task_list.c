@@ -148,4 +148,3 @@ dd_task_node* create_empty_list(){
     return empty_list;
 }
 
-
