@@ -34,6 +34,8 @@ void insert_at_back(dd_task_node **head, dd_task new_task)
     last->next_task = new_node;
 }
 
+// return entire node instead of task 
+
 dd_task pop(dd_task_node **head)
 {
     dd_task task;
@@ -90,4 +92,21 @@ int get_list_count(dd_task_node *head)
         current = current->next_task; // Move to the next node
     }
     return count;
+}
+
+dd_task_node* create_empty_list(){
+
+    dd_task_node *empty_list = (dd_task_node*)malloc(sizeof(dd_task_node));
+
+    empty_list->task.absolute_deadline = 0;
+    empty_list->task.completion_time = 0;
+    empty_list->task.release_time = 0;
+    empty_list->task.t_handle = NULL;
+    empty_list->task.task_id = 0;
+    empty_list->task.task_number = 0;
+    empty_list->task.type = 0;
+
+    empty_list->next_task = NULL; 
+
+    return empty_list;
 }

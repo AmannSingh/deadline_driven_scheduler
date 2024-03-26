@@ -272,10 +272,12 @@ void results_Init()
 void dd_scheduler(void *pvParameters)
 {
 
-	dd_task_node *active_list;
-	dd_task_node *completed_list;
-	dd_task_node *overdue_list;
+	dd_task_node *active_list = create_empty_list();
+	dd_task_node *completed_list = create_empty_list();
+	dd_task_node *overdue_list = create_empty_list();
+
 	dd_message message;
+	dd_task task;
 	int period;
 
 	while (1)
@@ -285,28 +287,35 @@ void dd_scheduler(void *pvParameters)
 		{
 			period = get_period(message.task.task_number);
 
+			dd_task_node **active_list_head = &active_list;
+
 			switch (message.type)
 			{
 			case release:
-
-				traverse_list(active_list);
-				dd_task_node **active_list_head = &active_list;
 				message.task.release_time = xTaskGetTickCount();
 				message.task.absolute_deadline = xTaskGetTickCount() + period;
 				insert_at_back(active_list_head, message.task);
 				sort_EDF(active_list_head);
-				traverse_list(active_list);
-
 				break;
 
 			case complete:
+				task = pop(active_list_head);
+				sort_EDF(active_list);
+				insert_at_back(complete, task);
 				break;
+
 			case get_active:
+				xQueueSendToBack(xQueueResponses, &active_list, portMAX_DELAY);
 				break;
+
 			case get_completed:
+				xQueueSendToBack(xQueueResponses, &completed_list, portMAX_DELAY);
 				break;
+
 			case get_overdue:
+				xQueueSendToBack(xQueueResponses, &overdue_list, portMAX_DELAY);
 				break;
+
 			default:
 				break;
 			}
@@ -385,6 +394,10 @@ void user_defined(void *pvParameters)
 
 	while (1)
 	{
+		/***check tto see if absolute deadline missed
+		 * if it is send message to dds
+		 */
+
 		activeList = get_active_list();
 		activeTask = activeList->task;
 		task_num = activeTask.task_number;
@@ -586,7 +599,7 @@ void generator3_callback(TimerHandle_t xTimer)
 
 void monitor_callback(TimerHandle_t xTimer)
 {
-	vTaskResume(pxMonitor)
+	vTaskResume(pxMonitor);
 }
 /*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
