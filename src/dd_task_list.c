@@ -93,3 +93,29 @@ int get_list_count(dd_task_node *head)
     }
     return count;
 }
+
+void delete_node_by_task_id(dd_task_node **head, uint32_t task_id) {
+    dd_task_node *temp = *head, *prev = NULL;
+
+    // If the head node itself holds the task to be deleted
+    if (temp != NULL && temp->task.task_id == task_id) {
+        *head = temp->next_task; // Changed head
+        free(temp); // free old head
+        return;
+    }
+
+    // Search for the task to be deleted, keep track of the previous node
+    // as we need to change 'prev->next'
+    while (temp != NULL && temp->task.task_id != task_id) {
+        prev = temp;
+        temp = temp->next_task;
+    }
+
+    // If task_id was not present in the list
+    if (temp == NULL) return;
+
+    // Unlink the node from the linked list
+    prev->next_task = temp->next_task;
+
+    free(temp); // Free memory
+}

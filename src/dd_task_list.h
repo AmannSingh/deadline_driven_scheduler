@@ -48,5 +48,6 @@ void delete_at_front(dd_task_node **head);
 dd_task pop(dd_task_node **head);
 void sort_EDF(dd_task_node **head);
 int get_list_count(dd_task_node *head);
+void delete_node_by_task_id(dd_task_node **head, uint32_t task_id);
 
 #endif // DD_TASK_LIST_H
