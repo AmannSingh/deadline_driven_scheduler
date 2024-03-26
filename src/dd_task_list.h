@@ -14,6 +14,10 @@
 #include "../FreeRTOS_Source/include/task.h"
 #include "../FreeRTOS_Source/include/timers.h"
 
+#define PRIORITY_HIGH 4
+#define PRIORITY_MED 3
+#define PRIORITY_LOW 1
+
 //
 // typedef enum task_type task_type;
 
@@ -48,6 +52,9 @@ void delete_at_front(dd_task_node **head);
 dd_task pop(dd_task_node **head);
 void sort_EDF(dd_task_node **head);
 int get_list_count(dd_task_node *head);
+dd_task_node* create_empty_list();
 void delete_node_by_task_id(dd_task_node **head, uint32_t task_id);
+void set_priority(dd_task_node **head);
+
 
 #endif // DD_TASK_LIST_H

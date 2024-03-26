@@ -34,7 +34,7 @@ void insert_at_back(dd_task_node **head, dd_task new_task)
     last->next_task = new_node;
 }
 
-// return entire node instead of task 
+// return entire node instead of task
 
 dd_task pop(dd_task_node **head)
 {
@@ -81,6 +81,17 @@ void sort_EDF(dd_task_node **head)
     } while (is_swapped);
 }
 
+void set_priority(dd_task_node **head){
+	dd_task_node* current = *head;
+	vTaskPrioritySet(current->task.t_handle, PRIORITY_MED);
+
+	current = current->next_task;
+	while(current!=NULL)
+	{
+		vTaskPrioritySet(current->task.t_handle, PRIORITY_LOW);
+	}
+
+}
 int get_list_count(dd_task_node *head)
 {
     int count = 0;
@@ -119,3 +130,22 @@ void delete_node_by_task_id(dd_task_node **head, uint32_t task_id) {
 
     free(temp); // Free memory
 }
+
+dd_task_node* create_empty_list(){
+
+    dd_task_node *empty_list = (dd_task_node*)malloc(sizeof(dd_task_node));
+
+    empty_list->task.absolute_deadline = 0;
+    empty_list->task.completion_time = 0;
+    empty_list->task.release_time = 0;
+    empty_list->task.t_handle = NULL;
+    empty_list->task.task_id = 0;
+    empty_list->task.task_number = 0;
+    empty_list->task.type = 0;
+
+    empty_list->next_task = NULL;
+
+    return empty_list;
+}
+
+
