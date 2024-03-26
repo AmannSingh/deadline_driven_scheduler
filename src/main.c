@@ -189,8 +189,8 @@ void move_overdue_tasks(dd_task_node **active_list, dd_task_node **overdue_list)
 
 void complete_dd_task(uint32_t task_id);
 dd_task_node *get_active_list(void);
-dd_task_node **get_completed_list(void);
-dd_task_node **get_overdue_list(void);
+dd_task_node *get_completed_list(void);
+dd_task_node *get_overdue_list(void);
 
 void generator1_callback(TimerHandle_t xTimer);
 void generator2_callback(TimerHandle_t xTimer);
@@ -220,7 +220,9 @@ uint32_t ID2 = 2000;
 uint32_t ID3 = 3000;
 
 int hyper_period_complete = 0;
-dd_task_node ** active_list_global = NULL;
+dd_task_node * active_list_global = NULL;
+dd_task_node *completed_list_global = NULL;
+dd_task_node *overdue_list_global = NULL;
 
 int main(void)
 {
@@ -325,9 +327,12 @@ void dd_scheduler(void *pvParameters)
 			case release:
 				currTick = xTaskGetTickCount();
 				measured_time = currTick * portTICK_PERIOD_MS;
+
 				print_event(event_number, message.task.task_number, message.type, measured_time);
+
 				message.task.release_time = currTick;
 				message.task.absolute_deadline = currTick + period;
+
 				insert_at_back(active_list_head, message.task);
 				sort_EDF(active_list_head);
 				set_priority(active_list_head);
@@ -336,11 +341,12 @@ void dd_scheduler(void *pvParameters)
 			case complete:
 				currTick = xTaskGetTickCount();
 				measured_time = currTick * portTICK_PERIOD_MS;
-				print_event(event_number, message.task.task_number, message.type, measured_time);
-				task = pop(active_list_head);
-				sort_EDF(active_list);
 
-				insert_at_back(completed_list_head, task);
+				print_event(event_number, message.task.task_number, message.type, measured_time);
+
+				task = pop(active_list_head);
+				insert_at_back(completed_list_head,task);
+				sort_EDF(active_list_head);
 				break;
 
 				// check on queue type
@@ -369,8 +375,8 @@ void dd_scheduler(void *pvParameters)
 void monitor(void *pvParameters)
 {
 	dd_task_node *active_list;
-	dd_task_node **completed_list;
-	dd_task_node **overdue_list;
+	dd_task_node *completed_list;
+	dd_task_node *overdue_list;
 
 	int active_count = 0;
 	int completed_count = 0;
@@ -379,8 +385,8 @@ void monitor(void *pvParameters)
 	while (1)
 	{
 		active_list = get_active_list();
-		completed_list = *get_completed_list();
-		overdue_list = *get_overdue_list();
+		completed_list = get_completed_list();
+		overdue_list = get_overdue_list();
 
 		active_count = get_list_count(active_list);
 		completed_count = get_list_count(completed_list);
@@ -429,7 +435,7 @@ void dd_task_generator_3(void *pvParameters)
 
 void user_defined(void *pvParameters)
 {
-	dd_task_node **activeList;
+	dd_task_node *activeList;
 	dd_task activeTask;
 	uint16_t task_num;
 	uint16_t count;
@@ -445,7 +451,7 @@ void user_defined(void *pvParameters)
 	{
 		printf("USER_DEFINED\n");
 		activeList = get_active_list();
-
+		activeTask = activeList->task;
 		task_num = activeTask.task_number;
 		count = 0;
 
@@ -565,10 +571,10 @@ dd_task_node *get_active_list()
 This function sends a message to a queue requesting the Completed Task List from the DDS. Once
 a response is received from the DDS, the function returns the list.
 */
-dd_task_node **get_completed_list()
+dd_task_node *get_completed_list()
 {
 	printf("GET_COMPLETED_LIST\n");
-	dd_task_node *completed_list;
+
 	dd_message message;
 	message.type = get_completed;
 
@@ -576,19 +582,19 @@ dd_task_node **get_completed_list()
 	xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
 
 	// Wait for reponse from DDS then return completed list
-	xQueueReceive(xQueueResponses, &completed_list, portMAX_DELAY);
+	xQueueReceive(xQueueResponses, &completed_list_global, portMAX_DELAY);
 
-	return completed_list;
+	return completed_list_global;
 };
 
 /*
 This function sends a message to a queue requesting the Overdue Task List from the DDS. Once a
 response is received from the DDS, the function returns the list
 */
-dd_task_node **get_overdue_list()
+dd_task_node *get_overdue_list()
 {
 	printf("GET_OVERDUE_LIST\n");
-	dd_task_node *overdue_list;
+
 	dd_message message;
 	message.type = get_overdue;
 
@@ -596,9 +602,9 @@ dd_task_node **get_overdue_list()
 	xQueueSendToBack(xQueueMessages, &message, portMAX_DELAY);
 
 	// Wait for reponse from DDS then return overdue list
-	xQueueReceive(xQueueResponses, &overdue_list, portMAX_DELAY);
+	xQueueReceive(xQueueResponses, &overdue_list_global, portMAX_DELAY);
 
-	return overdue_list;
+	return overdue_list_global;
 };
 
 TickType_t get_period_TICKS(uint16_t task_number)
