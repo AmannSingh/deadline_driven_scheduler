@@ -334,11 +334,10 @@ void dd_scheduler(void *pvParameters)
 				print_event(event_number, message.task.task_number, message.type, measured_time);
 				task = pop(active_list_head);
 				sort_EDF(active_list);
-
 				insert_at_back(completed_list_head, task);
 				break;
 
-				// check on queue type
+			// check on queue type
 			case get_active:
 				xQueueSendToBack(xQueueResponses, &active_list, portMAX_DELAY);
 				break;
@@ -348,7 +347,6 @@ void dd_scheduler(void *pvParameters)
 				break;
 
 			case get_overdue:
-				insert_at_back(overdue_list, message.task);
 				xQueueSendToBack(xQueueResponses, &overdue_list, portMAX_DELAY);
 				break;
 
@@ -364,9 +362,9 @@ void dd_scheduler(void *pvParameters)
 };
 void monitor(void *pvParameters)
 {
-	dd_task_node **active_list;
-	dd_task_node **completed_list;
-	dd_task_node **overdue_list;
+	dd_task_node **active_list = NULL;
+	dd_task_node **completed_list = NULL;
+	dd_task_node **overdue_list = NULL;
 
 	int active_count = 0;
 	int completed_count = 0;
