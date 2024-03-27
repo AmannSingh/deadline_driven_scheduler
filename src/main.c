@@ -163,9 +163,9 @@ typedef struct dd_message
 // Task handles ** might not need **
 TaskHandle_t pxDDS;
 TaskHandle_t pxMonitor;
-TaskHandle_t pxUser1;
-TaskHandle_t pxUser2;
-TaskHandle_t pxUser3;
+//TaskHandle_t pxUser1;
+//TaskHandle_t pxUser2;
+//TaskHandle_t pxUser3;
 TaskHandle_t pxTaskGen1;
 TaskHandle_t pxTaskGen2;
 TaskHandle_t pxTaskGen3;
@@ -187,7 +187,7 @@ TickType_t get_period_TICKS(uint16_t task_number);
 void print_event(int event_num, int task_num, message_type type, int measured_time);
 void move_overdue_tasks(dd_task_node **active_list, dd_task_node **overdue_list);
 
-void complete_dd_task(uint32_t task_id);
+void complete_dd_task(dd_task task);
 dd_task_node *get_active_list(void);
 dd_task_node *get_completed_list(void);
 dd_task_node *get_overdue_list(void);
@@ -259,18 +259,18 @@ void myDDS_Init()
 	/* Initialize Tasks*/
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, &pxDDS);
 	// vTaskSuspend(pxDDS);
-	//monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, &pxMonitor);
+//	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, &pxMonitor);
 	//vTaskSuspend(pxMonitor);
 	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_gen1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxTaskGen1);
 	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_gen2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxTaskGen2);
 	dd_task_gen3_task = xTaskCreate(dd_task_generator_3, "dd_task_gen3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxTaskGen3);
 
-	user_defined_task1 = xTaskCreate(user_defined, "usr_d1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser1);
-	user_defined_task2 = xTaskCreate(user_defined, "usr_d2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser2);
-	user_defined_task3 = xTaskCreate(user_defined, "usr_d3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser3);
-	vTaskSuspend(pxUser1);
-	vTaskSuspend(pxUser2);
-	vTaskSuspend(pxUser3);
+//	user_defined_task1 = xTaskCreate(user_defined, "usr_d1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser1);
+//	user_defined_task2 = xTaskCreate(user_defined, "usr_d2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser2);
+//	user_defined_task3 = xTaskCreate(user_defined, "usr_d3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser3);
+//	vTaskSuspend(pxUser1);
+//	vTaskSuspend(pxUser2);
+//	vTaskSuspend(pxUser3);
 
 	// if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (user_defined_task == NULL) | (monitor_task == NULL))
 	// {
@@ -345,8 +345,11 @@ void dd_scheduler(void *pvParameters)
 				print_event(event_number, message.task.task_number, message.type, measured_time);
 
 				task = pop(active_list_head);
-				insert_at_back(completed_list_head,task);
-				sort_EDF(active_list_head);
+				//insert_at_back(completed_list_head,task);
+				if(*active_list_head != NULL){
+					sort_EDF(active_list_head);
+				}
+
 				break;
 
 				// check on queue type
@@ -366,7 +369,8 @@ void dd_scheduler(void *pvParameters)
 				break;
 			}
 		}
-		if (active_list->task.t_handle != NULL)
+
+		if (active_list != NULL)
 		{
 			vTaskResume(active_list->task.t_handle);
 		}
@@ -403,10 +407,14 @@ void monitor(void *pvParameters)
 };
 void dd_task_generator_1(void *pvParameters)
 {
+	TaskHandle_t pxUser1;
 
 	while (1)
 	{
 		printf("gen1\n");
+
+		user_defined_task1 = xTaskCreate(user_defined, "usr_d1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser1);
+		vTaskSuspend(pxUser1);
 		release_dd_task(pxUser1, PERIODIC, ++ID1, 1);
 		vTaskSuspend(pxTaskGen1);
 	}
@@ -415,20 +423,27 @@ void dd_task_generator_1(void *pvParameters)
 void dd_task_generator_2(void *pvParameters)
 {
 
+	TaskHandle_t pxUser2;
+
 	while (1)
 	{
 		printf("gen2\n");
+		user_defined_task2 = xTaskCreate(user_defined, "usr_d2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser2);
+		vTaskSuspend(pxUser2);
 		release_dd_task(pxUser2, PERIODIC, ++ID2, 2);
 		vTaskSuspend(pxTaskGen2);
 	}
 };
 void dd_task_generator_3(void *pvParameters)
 {
+	TaskHandle_t pxUser3;
 
 	while (1)
 	{
 		printf("gen3\n");
+		user_defined_task3 = xTaskCreate(user_defined, "usr_d3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser3);
 		release_dd_task(pxUser3, PERIODIC, ++ID3, 3);
+		vTaskSuspend(pxUser3);
 		vTaskSuspend(pxTaskGen3);
 	}
 };
@@ -485,7 +500,8 @@ void user_defined(void *pvParameters)
 			}
 		}
 		if(activeTask.task_id > 1000 && activeTask.task_id < 4000){
-			complete_dd_task(activeTask.task_id);
+			complete_dd_task(activeTask);
+			vTaskDelete(NULL);
 		}else{
 			printf("error: cannot complete task in user defined. NO valid task id\n");
 		}
@@ -530,12 +546,11 @@ void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, ui
 This function receives the ID of the DD-Task which has completed its execution. The ID is packaged
 as a message and sent to a queue for the DDS to receive.
 */
-void complete_dd_task(uint32_t task_id)
+void complete_dd_task(dd_task task)
 {
 	/* delete task from active_list and add to completed */
 	printf("COMPLETE_DD_TASK\n");
-	dd_task task;
-	task.task_id = task_id;
+
 
 	dd_message new_message;
 	new_message.type = complete;
@@ -647,7 +662,8 @@ int get_execution_time(uint16_t task_number)
 
 void print_event(int event_num, int task_num, message_type type, int measured_time)
 {
-	if (measured_time <= HYPER_PERIOD)
+//	if (measured_time <= HYPER_PERIOD)
+	if(1)
 	{
 		printf("\t%d\t\tTask %d ", event_num, task_num);
 		type == release ? printf("released") : printf("completed");
