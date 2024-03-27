@@ -283,9 +283,9 @@ void myDDS_Init()
 	timer_generator3 = xTimerCreate("timer3", pdMS_TO_TICKS(t3_period), pdTRUE, 0, generator3_callback);
 
 	/* Monitor timer. */
-//	timer_monitor = xTimerCreate("monitor", MONITOR_PERIOD, pdTRUE, 0, monitor_callback);
+	timer_monitor = xTimerCreate("monitor", MONITOR_PERIOD, pdTRUE, 0, monitor_callback);
 
-	printf("dds init\n");
+//	printf("dds init\n");
 };
 
 void results_Init()
@@ -329,7 +329,7 @@ void dd_scheduler(void *pvParameters)
 				measured_time = currTick * portTICK_PERIOD_MS;
 
 				print_event(event_number, message.task.task_number, message.type, measured_time);
-
+				event_number++;
 				message.task.release_time = currTick;
 				message.task.absolute_deadline = currTick + period;
 
@@ -343,7 +343,7 @@ void dd_scheduler(void *pvParameters)
 				measured_time = currTick * portTICK_PERIOD_MS;
 
 				print_event(event_number, message.task.task_number, message.type, measured_time);
-
+				event_number++;
 				task = pop(active_list_head);
 				//insert_at_back(completed_list_head,task);
 				if(*active_list_head != NULL){
@@ -411,7 +411,7 @@ void dd_task_generator_1(void *pvParameters)
 
 	while (1)
 	{
-		printf("gen1\n");
+//		printf("gen1\n");
 
 		user_defined_task1 = xTaskCreate(user_defined, "usr_d1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser1);
 		vTaskSuspend(pxUser1);
@@ -427,7 +427,7 @@ void dd_task_generator_2(void *pvParameters)
 
 	while (1)
 	{
-		printf("gen2\n");
+//		printf("gen2\n");
 		user_defined_task2 = xTaskCreate(user_defined, "usr_d2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser2);
 		vTaskSuspend(pxUser2);
 		release_dd_task(pxUser2, PERIODIC, ++ID2, 2);
@@ -440,7 +440,7 @@ void dd_task_generator_3(void *pvParameters)
 
 	while (1)
 	{
-		printf("gen3\n");
+//		printf("gen3\n");
 		user_defined_task3 = xTaskCreate(user_defined, "usr_d3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxUser3);
 		release_dd_task(pxUser3, PERIODIC, ++ID3, 3);
 		vTaskSuspend(pxUser3);
@@ -464,7 +464,7 @@ void user_defined(void *pvParameters)
 
 	while (1)
 	{
-		printf("USER_DEFINED\n");
+//		printf("USER_DEFINED\n");
 		activeList = get_active_list();
 		activeTask = activeList->task;
 		task_num = activeTask.task_number;
@@ -482,7 +482,7 @@ void user_defined(void *pvParameters)
 			executionTick = pdMS_TO_TICKS(t3_execution);
 			break;
 		default:
-			printf("ERROR: could not get task number in user defined task.\n");
+//			printf("ERROR: could not get task number in user defined task.\n");
 			break;
 		}
 
@@ -503,7 +503,7 @@ void user_defined(void *pvParameters)
 			complete_dd_task(activeTask);
 			vTaskDelete(NULL);
 		}else{
-			printf("error: cannot complete task in user defined. NO valid task id\n");
+//			printf("error: cannot complete task in user defined. NO valid task id\n");
 		}
 
 	}
@@ -527,7 +527,7 @@ for the DDS to receive.
 */
 void release_dd_task(TaskHandle_t t_handle, task_type type, uint32_t task_id, uint16_t task_number)
 {
-	printf("RELEASE_DD_TASK\n");
+//	printf("RELEASE_DD_TASK\n");
 	dd_task new_task;
 	new_task.t_handle = t_handle;
 	new_task.type = type;
@@ -549,7 +549,7 @@ as a message and sent to a queue for the DDS to receive.
 void complete_dd_task(dd_task task)
 {
 	/* delete task from active_list and add to completed */
-	printf("COMPLETE_DD_TASK\n");
+//	printf("COMPLETE_DD_TASK\n");
 
 
 	dd_message new_message;
@@ -565,7 +565,7 @@ response is received from the DDS, the function returns the list.
 */
 dd_task_node *get_active_list()
 {
-	printf("GET_ACTIVE_LIST\n");
+//	printf("GET_ACTIVE_LIST\n");
 //	dd_task_node *active_list;
 	dd_message message;
 	message.type = get_active;
@@ -577,7 +577,7 @@ dd_task_node *get_active_list()
 	// Wait for reponse from DDS then return active list
 	xQueueReceive(xQueueResponses, &active_list_global, portMAX_DELAY);
 
-	printf("RETURNING ACTIVE LIST\n");
+//	printf("RETURNING ACTIVE LIST\n");
 
 	return active_list_global;
 }
@@ -588,7 +588,7 @@ a response is received from the DDS, the function returns the list.
 */
 dd_task_node *get_completed_list()
 {
-	printf("GET_COMPLETED_LIST\n");
+//	printf("GET_COMPLETED_LIST\n");
 
 	dd_message message;
 	message.type = get_completed;
@@ -608,7 +608,7 @@ response is received from the DDS, the function returns the list
 */
 dd_task_node *get_overdue_list()
 {
-	printf("GET_OVERDUE_LIST\n");
+//	printf("GET_OVERDUE_LIST\n");
 
 	dd_message message;
 	message.type = get_overdue;
@@ -672,7 +672,7 @@ void print_event(int event_num, int task_num, message_type type, int measured_ti
 	else if (!hyper_period_complete)
 	{
 		hyper_period_complete = 1;
-		printf("HYPER-PERIOD finished.. \n");
+//		printf("HYPER-PERIOD finished.. \n");
 	}
 }
 
