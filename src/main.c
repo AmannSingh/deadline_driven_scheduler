@@ -253,12 +253,14 @@ void myDDS_Init()
 	}
 	/* Initialize Tasks*/
 	dd_scheduler_task = xTaskCreate(dd_scheduler, "dd_scheduler", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, &pxDDS);
-	// vTaskSuspend(pxDDS);
 	monitor_task = xTaskCreate(monitor, "monitor", configMINIMAL_STACK_SIZE, NULL, PRIORITY_HIGH, &pxMonitor);
-	vTaskSuspend(pxMonitor);
+
 	dd_task_gen1_task = xTaskCreate(dd_task_generator_1, "dd_task_gen1", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxTaskGen1);
 	dd_task_gen2_task = xTaskCreate(dd_task_generator_2, "dd_task_gen2", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxTaskGen2);
 	dd_task_gen3_task = xTaskCreate(dd_task_generator_3, "dd_task_gen3", configMINIMAL_STACK_SIZE, NULL, PRIORITY_MED, &pxTaskGen3);
+	vTaskSuspend(pxTaskGen1);
+	vTaskSuspend(pxTaskGen2);
+	vTaskSuspend(pxTaskGen3);
 
 	if ((dd_scheduler_task == NULL) | (dd_task_gen1_task == NULL) | (dd_task_gen2_task == NULL) | (dd_task_gen3_task == NULL) | (monitor_task == NULL))
 	{
